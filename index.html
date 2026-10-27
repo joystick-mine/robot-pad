@@ -2,602 +2,1558 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>파이브릭스 단어블록</title>
-<meta name="theme-color" content="#2C52D1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0f141b">
+<script>
+  // 저장된 화면 색을 화면 그리기 전에 먼저 적용 (깜빡임 방지)
+  try { var t = localStorage.getItem("robot-pad-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="icon" href="icon-192.png">
+<title>로봇 조종기</title>
 <style>
-/* Layout: 블록 작업대(왼쪽, 넓게) + 코드·로봇 패널(오른쪽). 좁은 화면에선 탭으로 전환 */
-:root {
-  --bg: #EEF0F5; --surface: #FFFFFF; --ink: #1A1F2E; --muted: #5B6377; --line: #D8DCE6;
-  --accent: #2C52D1; --accent-ink: #FFFFFF; --code-bg: #F6F7FA;
-  --code-kw: #B4235F; --code-str: #1F7A4A; --code-num: #9A5B00; --code-const: #2C52D1; --code-com: #7A8296;
-  --danger: #C2362B; --ok: #1F8A4C; --term-bg: #10141E; --term-ink: #D6DCE8;
-  --ev3: #C25B00; --spike: #2C52D1;
-  --font-display: "Do Hyeon", "IBM Plex Sans KR", sans-serif;
-  --font-ui: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --font-code: "JetBrains Mono", "IBM Plex Sans KR", ui-monospace, Menlo, Consolas, monospace;
-  --gutter-l: max(16px, env(safe-area-inset-left, 0px));
-  --gutter-r: max(16px, env(safe-area-inset-right, 0px));
-  color-scheme: light;
-  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #12151D; --surface: #1B1F2A; --ink: #E7EAF2; --muted: #98A0B4; --line: #2B3140;
-    --accent: #7D9BFF; --accent-ink: #0E1220; --code-bg: #151923;
-    --code-kw: #FF7AAE; --code-str: #6FD69C; --code-num: #F2B45C; --code-const: #8FB0FF; --code-com: #6F7891;
-    --danger: #FF7B6E; --ok: #5ED08E; --term-bg: #0B0E15; --ev3: #FF9F4A; --spike: #7D9BFF; color-scheme: dark;
+  :root {
+    --bg: #0f141b;
+    --card: #18202b;
+    --line: #2a3544;
+    --text: #e8edf3;
+    --muted: #8a97a8;
+    --accent: #3fa7ff;
+    --ok: #3ccf7a;
+    --warn: #ffb347;
+    --bad: #ff5d5d;
+    --tri: #3ccf9a;
+    --cir: #ff6b6b;
+    --cro: #6b9bff;
+    --squ: #e07bff;
+    --btn: #0f1620;          /* 버튼·입력칸 바탕 */
+    --okline: #2c5a40;       /* 연결됨 표시 테두리 */
+    --accentText: #04121f;   /* 강조색 위 글자 */
+    --faceOn: #0f141b;       /* 도형 버튼 눌렀을 때 글자 */
   }
-}
-:root[data-theme="dark"] {
-  --bg: #12151D; --surface: #1B1F2A; --ink: #E7EAF2; --muted: #98A0B4; --line: #2B3140;
-  --accent: #7D9BFF; --accent-ink: #0E1220; --code-bg: #151923;
-  --code-kw: #FF7AAE; --code-str: #6FD69C; --code-num: #F2B45C; --code-const: #8FB0FF; --code-com: #6F7891;
-  --danger: #FF7B6E; --ok: #5ED08E; --term-bg: #0B0E15; --ev3: #FF9F4A; --spike: #7D9BFF; color-scheme: dark;
-}
-html { height: 100%; box-sizing: border-box; }
-*, *::before, *::after { box-sizing: inherit; }
-[hidden] { display: none !important; }
-body { height: 100%; margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 14px; }
-.app { height: 100%; display: flex; flex-direction: column; }
 
-/* 상단 바 */
-.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding-block: 10px 8px; padding-left: var(--gutter-l); padding-right: var(--gutter-r); }
-.brand { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1 1 320px; flex-wrap: wrap; }
-.brand h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 26px; line-height: 1; white-space: nowrap; }
-.brand h1 .stud { display: inline-block; width: 14px; height: 14px; border-radius: 4px; background: #E8B10A; margin-right: 8px; box-shadow: inset 0 -3px 0 rgba(0,0,0,.18); vertical-align: 1px; }
-.hubsel { position: relative; display: inline-flex; align-items: center; }
-.hubsel .hubdot { position: absolute; left: 11px; width: 10px; height: 10px; border-radius: 50%; background: var(--hubc, var(--spike)); pointer-events: none; }
-.hubsel select { height: 36px; padding: 0 30px 0 28px; border: 1px solid var(--line); border-left: 4px solid var(--hubc, var(--spike)); border-radius: 10px; background: var(--surface); color: var(--ink); font: 600 14px var(--font-ui); }
-.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-button, select, .linkbtn {
-  font: 600 13px/1 var(--font-ui); color: var(--ink); background: var(--surface);
-  border: 1px solid var(--line); border-radius: 8px; height: 36px; padding: 0 12px;
-  cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; white-space: nowrap;
-}
-button:disabled { opacity: .45; cursor: default; }
-button:not(:disabled):hover, select:hover, .linkbtn:hover { border-color: var(--muted); }
-button:focus-visible, select:focus-visible, .linkbtn:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-button.primary, .linkbtn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-button.warn { color: var(--danger); border-color: var(--danger); }
-button.mlbtn { background: #B8458F; color: #fff; border-color: #B8458F; }
-.iconbtn { width: 36px; padding: 0; justify-content: center; font-size: 16px; }
+  /* ===== 화면 색 테마 ===== */
+  :root[data-theme="light"] {
+    --bg: #eef2f7; --card: #ffffff; --line: #d3dae4; --text: #1b2430; --muted: #5b6878;
+    --accent: #1f74d8; --ok: #1d9a52; --warn: #b86e00; --bad: #d23a3a;
+    --tri: #0f9a72; --cir: #de413b; --cro: #376ad8; --squ: #a947cc;
+    --btn: #f6f8fb; --okline: #9fd6b6; --accentText: #ffffff; --faceOn: #ffffff;
+  }
+  :root[data-theme="ocean"] {
+    --bg: #061a2b; --card: #0c2a43; --line: #1c4769; --text: #e4f4ff; --muted: #86aac6;
+    --accent: #23c4e8; --ok: #37d6a0; --warn: #ffc15c; --bad: #ff6b6b;
+    --tri: #4fe0b4; --cir: #ff7b7b; --cro: #7fb2ff; --squ: #d08cff;
+    --btn: #08223a; --okline: #1f6a5a; --accentText: #04202c; --faceOn: #061a2b;
+  }
+  :root[data-theme="forest"] {
+    --bg: #0c1a11; --card: #13281b; --line: #24442f; --text: #e8f6ec; --muted: #8fb59b;
+    --accent: #4fd27b; --ok: #4fd27b; --warn: #ffc25a; --bad: #ff6b5e;
+    --tri: #8ee86b; --cir: #ff7a6b; --cro: #6fb6ff; --squ: #d995ff;
+    --btn: #0e2116; --okline: #2f6b44; --accentText: #082010; --faceOn: #0c1a11;
+  }
+  :root[data-theme="space"] {
+    --bg: #130e23; --card: #1e1635; --line: #362a59; --text: #f0eaff; --muted: #a698ca;
+    --accent: #9d6cff; --ok: #4fd8a0; --warn: #ffc15c; --bad: #ff6b8b;
+    --tri: #5ee3b8; --cir: #ff7aa0; --cro: #7ea8ff; --squ: #e48cff;
+    --btn: #170f2b; --okline: #3c6a5e; --accentText: #ffffff; --faceOn: #130e23;
+  }
+  :root[data-theme="berry"] {
+    --bg: #fff0f5; --card: #ffffff; --line: #f2c4d5; --text: #3b1a29; --muted: #94566f;
+    --accent: #e8457f; --ok: #1d9a5a; --warn: #b86e00; --bad: #d23a3a;
+    --tri: #0f9a72; --cir: #d6304a; --cro: #3b68d6; --squ: #a33fc4;
+    --btn: #fff7fa; --okline: #9fd6b6; --accentText: #ffffff; --faceOn: #ffffff;
+  }
+  :root[data-theme="lemon"] {
+    --bg: #fffbe8; --card: #ffffff; --line: #ecdca0; --text: #3a3110; --muted: #7f6f32;
+    --accent: #f0a500; --ok: #1d9a52; --warn: #b05f00; --bad: #d23a3a;
+    --tri: #0f9a72; --cir: #d8402f; --cro: #376ad8; --squ: #a947cc;
+    --btn: #fffdf4; --okline: #a8d8b4; --accentText: #2a2000; --faceOn: #ffffff;
+  }
 
-/* 포트 바 (스파이크 앱처럼 위에 보여요) */
-.ports { display: flex; gap: 6px; overflow-x: auto; padding: 0 var(--gutter-r) 8px var(--gutter-l); scrollbar-width: thin; }
-.ports.tiles { gap: 8px; padding-bottom: 10px; }
-.ptile { flex: none; width: 150px; display: grid; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; }
-.ptile.empty { opacity: .55; width: 88px; align-content: start; }
-.phead { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
-.pname { font: 600 14px var(--font-code); color: var(--accent); }
-.pkind { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pval { font: 600 18px var(--font-code); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; min-height: 26px; }
-.pval .swatch { width: 14px; height: 14px; border-radius: 4px; border: 1px solid var(--line); flex: none; }
-.pmode { height: 28px; font-size: 12px; padding: 0 4px; width: 100%; }
-.port { flex: none; display: inline-flex; align-items: baseline; gap: 6px; background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px; font-size: 12px; }
-.port i { font-style: normal; color: var(--muted); }
-.port b { font: 600 13px var(--font-code); font-variant-numeric: tabular-nums; }
+  /* 테마 고르는 동그라미 */
+  .themes { display: flex; gap: 10px; flex-wrap: wrap; }
+  .theme-pick {
+    font: inherit; font-size: 13px; color: var(--muted); cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px 6px 6px; border-radius: 999px;
+    background: var(--btn); border: 2px solid var(--line);
+  }
+  .theme-pick .sw {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1px solid rgba(127,127,127,.35);
+  }
+  .theme-pick[aria-pressed="true"] { border-color: var(--accent); color: var(--text); font-weight: 700; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: var(--bg);
+    transition: background .2s, color .2s;
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Noto Sans KR", sans-serif;
+    display: flex; flex-direction: column; min-height: 100vh;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));
+    user-select: none; -webkit-user-select: none;
+    overscroll-behavior: none;
+  }
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+  }
+  h1 { font-size: 20px; margin: 0; letter-spacing: -0.02em; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip {
+    font-size: 13px; padding: 6px 12px; border-radius: 999px;
+    background: var(--card); border: 1px solid var(--line); color: var(--muted);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .chip.ok { color: var(--text); border-color: var(--okline); }
+  .chip.ok .dot { background: var(--ok); }
+  .chip.wait .dot { background: var(--warn); }
+  .chip.bad .dot { background: var(--bad); }
 
-.tabs { display: none; gap: 4px; padding: 0 var(--gutter-r) 8px var(--gutter-l); }
-.tabs button { flex: 1; justify-content: center; }
-.tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .bar {
+    margin-top: 12px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  }
+  button.primary {
+    font: inherit; font-weight: 700; font-size: 16px;
+    padding: 12px 20px; border-radius: 12px; border: 0;
+    background: var(--accent); color: var(--accentText); cursor: pointer;
+  }
+  button.primary:disabled, button.ghost:disabled { opacity: .5; }
+  button[hidden] { display: none; }
+  button.ghost {
+    font: inherit; font-size: 14px; padding: 10px 14px; border-radius: 12px;
+    background: transparent; color: var(--muted); border: 1px solid var(--line); cursor: pointer;
+  }
+  button.ghost.active { color: var(--text); border-color: var(--accent); }
+  button.mini {
+    font: inherit; font-size: 12px; padding: 5px 9px; border-radius: 8px;
+    background: var(--btn); color: var(--muted); border: 1px solid var(--line); cursor: pointer;
+  }
+  .msg { font-size: 14px; color: var(--muted); flex: 1; min-width: 200px; }
+  .msg.err { color: var(--bad); }
 
-/* 작업 영역 */
-.work { flex: 1; min-height: 0; display: grid; gap: 0; grid-template-columns: minmax(0, 1fr) 12px var(--sidew, minmax(340px, 36%));
-  padding-left: var(--gutter-l); padding-right: var(--gutter-r); padding-block: 0 14px; }
-.pane { min-width: 0; min-height: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; position: relative; }
-#blockly { position: absolute; inset: 0; }
-.loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
-.side { display: flex; flex-direction: column; }
-.code-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
-.code-head h2 { margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
-.code-head h2 b { color: var(--ink); text-transform: none; letter-spacing: 0; font-size: 14px; }
-.chip { display: inline-block; margin-left: 6px; padding: 2px 7px; border-radius: 999px; background: #C98A00; color: #fff; font-size: 11px; letter-spacing: 0; text-transform: none; vertical-align: 1px; }
-.code-body { flex: 1 1 40%; min-height: 120px; overflow: auto; background: var(--code-bg); }
-.code-head .headbtns { display: flex; gap: 6px; }
-/* 가운데 막대: 끌어서 블록 작업대와 오른쪽 패널 크기를 바꿔요 */
-.splitter { cursor: col-resize; display: flex; align-items: center; justify-content: center; touch-action: none; }
-.splitter::before { content: ""; width: 4px; height: 44px; border-radius: 2px; background: var(--line); transition: background .15s; }
-.splitter:hover::before, .splitter.drag::before, .splitter:focus-visible::before { background: var(--accent); }
-pre#out { margin: 0; padding: 12px 0; font: 12.5px/1.6 var(--font-code); counter-reset: ln; tab-size: 4; }
-pre#out .l { display: block; padding: 0 14px 0 0; white-space: pre; }
-pre#out .l.errline { background: color-mix(in srgb, var(--danger) 18%, transparent); outline: 1px solid var(--danger); }
-pre#out .l::before { counter-increment: ln; content: counter(ln); display: inline-block; width: 3.2em; padding-right: 1em; text-align: right; color: var(--code-com); opacity: .7; user-select: none; }
-.t-kw { color: var(--code-kw); font-weight: 600; } .t-str { color: var(--code-str); } .t-num { color: var(--code-num); }
-.t-const { color: var(--code-const); } .t-com { color: var(--code-com); font-style: italic; }
+  /* ===== 허브 준비 패널 ===== */
+  .setup {
+    margin-top: 12px; background: var(--card); border: 1px solid var(--line);
+    border-radius: 16px; padding: 14px 16px; display: grid; gap: 14px;
+  }
+  .setup[hidden] { display: none; }
+  .setup > h2 { font-size: 17px; margin: 0; }
+  .setup > p { margin: 0; font-size: 14px; color: var(--muted); }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; }
+  .stepcard {
+    border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: var(--btn);
+    display: grid; gap: 10px; align-content: start; min-width: 0;
+  }
+  .stepcard h3 { margin: 0; font-size: 15px; display: flex; gap: 8px; align-items: center; }
+  .stepcard .num {
+    width: 24px; height: 24px; border-radius: 50%; display: inline-grid; place-items: center;
+    background: var(--accent); color: var(--accentText); font-size: 13px; font-weight: 800; flex: none;
+  }
+  .stepcard p, .stepcard li { font-size: 14px; line-height: 1.6; color: var(--text); margin: 0; }
+  .stepcard ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+  .stepcard .muted { color: var(--muted); font-size: 13px; }
+  .stepcard details { font-size: 14px; color: var(--muted); }
+  .stepcard summary { cursor: pointer; color: var(--text); font-weight: 600; }
+  .stepcard details p { margin-top: 6px; color: var(--muted); }
+  .stepcard a.linkbtn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    font-weight: 700; font-size: 15px; text-decoration: none;
+    padding: 11px 16px; border-radius: 12px; background: var(--accent); color: var(--accentText);
+  }
+  .progress { height: 10px; border-radius: 999px; background: var(--line); overflow: hidden; }
+  .progress[hidden] { display: none; }
+  .progress > div { height: 100%; width: 0%; background: var(--ok); transition: width .15s; }
+  .installmsg { font-size: 14px; color: var(--muted); min-height: 1.2em; }
+  .installmsg.ok { color: var(--ok); font-weight: 700; }
+  .installmsg.err { color: var(--bad); }
+  .notice {
+    margin-top: 10px; padding: 10px 14px; border-radius: 12px;
+    border: 2px solid var(--warn); background: var(--card);
+    display: flex; gap: 12px; align-items: center; flex-wrap: wrap; font-size: 14px;
+  }
+  .notice[hidden] { display: none; }
+  .notice b { color: var(--warn); }
 
-/* 로봇 패널 */
-.robot { border-top: 1px solid var(--line); padding: 10px 12px 12px; display: grid; gap: 8px; flex: 0 0 auto; }
-.robot h3 { margin: 0; font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.hubs { display: flex; flex-wrap: wrap; gap: 6px; font-size: 12px; }
-.hubchip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 3px 4px 3px 10px; }
-.hubchip.run { border-color: var(--ok); }
-.hubchip button { height: 22px; width: 22px; padding: 0; justify-content: center; border-radius: 999px; font-size: 11px; }
-.muted, .dim { color: var(--muted); }
-progress { width: 100%; height: 6px; accent-color: var(--accent); }
-.term { margin: 0; height: 120px; overflow: auto; background: var(--term-bg); color: var(--term-ink); border-radius: 8px; padding: 8px 10px; font: 12px/1.5 var(--font-code); white-space: pre-wrap; word-break: break-all; }
-.term .err { color: #FF8A80; } .term .dim { color: #8B95AB; } .term .hint { color: #FFD479; }
-.foot { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
-.foot .grow { flex: 1; }
+  /* ===== 설정 패널 ===== */
+  .settings {
+    margin-top: 12px; background: var(--card); border: 1px solid var(--line);
+    border-radius: 16px; padding: 14px 16px;
+  }
+  .settings[hidden] { display: none; }
+  .settings h3 {
+    font-size: 14px; margin: 18px 0 10px; color: var(--text);
+    display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  }
+  .settings h3 small { font-size: 12px; font-weight: 400; color: var(--muted); }
+  .sgrid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field .name { font-size: 13px; color: var(--muted); }
+  .field .inrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  input[type=number], select {
+    font: inherit; font-size: 18px; font-weight: 700;
+    padding: 8px 10px; border-radius: 10px;
+    background: var(--btn); color: var(--text); border: 1px solid var(--line);
+  }
+  input[type=number] { width: 100%; min-width: 0; flex: 1; user-select: text; -webkit-user-select: text; }
+  select { min-width: 90px; }
+  input[type=number]:focus, select:focus { outline: none; border-color: var(--accent); }
+  .field .unit { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .field .hint { font-size: 12px; color: var(--muted); }
+  .field .hint.warn { color: var(--warn); font-weight: 700; }
+  .field input.warn { border-color: var(--warn); }
+  .field.wide { grid-column: 1 / -1; }
+  .field input[type=range] { width: 100%; accent-color: var(--accent); }
+  .chk {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted);
+    padding: 6px 10px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer;
+  }
+  .chk input { width: 18px; height: 18px; accent-color: var(--accent); }
+  .curve-scale {
+    display: flex; justify-content: space-between; font-size: 11px; color: var(--muted);
+  }
+  .curve-now { font-size: 15px; font-weight: 700; color: var(--text); }
+  .srow { margin-top: 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .savemsg { font-size: 13px; color: var(--muted); }
+  .savemsg.ok { color: var(--ok); }
+  .savemsg.err { color: var(--bad); }
+  .savemsg.warn { color: var(--warn); }
 
-/* Blockly */
-.blocklyToolboxDiv { background: var(--surface) !important; border-right: 1px solid var(--line); padding-top: 6px !important; }
-.blocklyTreeRow { height: 36px !important; line-height: 36px !important; margin: 0 6px 2px 0 !important; border-radius: 0 8px 8px 0; padding-right: 10px !important; }
-.blocklyTreeLabel { font-family: var(--font-ui) !important; font-size: 14px !important; font-weight: 600; color: var(--ink); }
-.blocklyTreeSelected .blocklyTreeLabel { color: #fff; }
-.blocklyWidgetDiv .blocklyMenu, .blocklyDropDownDiv { font-family: var(--font-ui) !important; }
-.blocklyFlyoutLabelText { fill: var(--muted) !important; font-family: var(--font-ui) !important; font-size: 12px !important; }
-.blocklyToolboxDiv.blocklyToolboxDelete { background: color-mix(in srgb, var(--danger) 14%, var(--surface)) !important; }
-.blocklyToolboxDiv.blocklyToolboxDelete::after { content: "🗑 놓으면 삭제"; position: absolute; left: 0; right: 0; bottom: 12px; text-align: center; font: 700 13px var(--font-ui); color: var(--danger); pointer-events: none; }
+  .stage {
+    flex: 1; margin-top: 14px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 20px;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+    padding: 16px; gap: 16px; min-height: 280px; position: relative;
+  }
+  .shoulders {
+    position: absolute; top: 14px; left: 16px; right: 16px;
+    display: flex; justify-content: space-between; pointer-events: none;
+  }
+  .shoulders .b { pointer-events: auto; }
 
-/* 대화상자·환영 */
-.dlg { position: fixed; inset: 0; background: rgba(10,14,24,.5); display: grid; place-items: center; z-index: 100; padding: 16px; }
-.dlg-box { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 14px; width: min(420px, 100%); padding: 20px; display: grid; gap: 12px; box-shadow: 0 18px 40px rgba(0,0,0,.25); }
-.dlg-box p { margin: 0; } .dlg-box .hint { color: var(--muted); font-size: 13px; } .dlg-box .err { color: var(--danger); font-size: 13px; }
-.dlg-box input { font: 16px var(--font-ui); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; width: 100%; }
-.dlg-actions { display: flex; justify-content: flex-end; gap: 8px; }
-.welcome h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 28px; }
-.pick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.pick button { height: auto; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px; text-align: left; white-space: normal; }
-.pick b { font-size: 16px; } .pick span { font-weight: 400; color: var(--muted); font-size: 12px; line-height: 1.4; }
-.pick button b { color: var(--hubc); } .pick button.small { padding-block: 8px; } .pick button.small span { font-size: 12px; }
+  .b {
+    border: 2px solid var(--line); background: var(--btn); color: var(--muted);
+    display: flex; align-items: center; justify-content: center; flex-direction: column;
+    font-weight: 700; touch-action: none; cursor: pointer;
+    transition: transform .06s, background .06s, border-color .06s, color .06s;
+  }
+  .b small { font-size: 11px; font-weight: 500; margin-top: 2px; opacity: .8; }
+  .b.on { transform: scale(.94); color: var(--accentText); }
 
-.about { width: min(520px, 100%); max-height: calc(100% - 32px); overflow: auto; }
-.about h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 24px; }
-.credits { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
-.credits li { border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; font-size: 13px; color: var(--muted); line-height: 1.5; }
-.credits b { color: var(--ink); }
-.credits span { font: 600 11px var(--font-code); color: var(--accent); margin-left: 4px; }
-.support { display: grid; gap: 8px; justify-items: start; background: var(--bg); border-radius: 10px; padding: 12px; }
-.support p { font-size: 13px; line-height: 1.5; }
-.hint.small { font-size: 12px; }
-.fwbox { width: min(560px, 100%); max-height: calc(100% - 32px); overflow: auto; }
-.fwbox h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 24px; }
-.field { display: grid; gap: 6px; font-weight: 600; font-size: 13px; }
-.steps { margin: 0; padding-left: 1.4em; display: grid; gap: 6px; font-size: 14px; line-height: 1.5; }
-.steps.small { font-size: 13px; }
-.steps b { color: var(--accent); }
-.fw-help { border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; font-size: 13px; }
-.fw-help summary { cursor: pointer; font-weight: 600; }
-.fw-help ol { margin-top: 8px; }
-.check { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--muted); line-height: 1.5; }
-.check input, .dlg-box .check input { width: 18px; height: 18px; padding: 0; margin: 2px 0 0; flex: none; accent-color: var(--accent); }
-.fw-status { min-height: 1.4em; font-weight: 600; }
-.fw-status.ok { color: var(--ok); } .fw-status.bad { color: var(--danger); }
-.extbox { width: min(640px, 100%); max-height: calc(100% - 32px); overflow: auto; }
-.extbox h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 24px; }
-.extlist { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
-.extcard { height: auto; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px; text-align: left; white-space: normal; position: relative; }
-.extcard .exticon { font-size: 26px; line-height: 1; }
-.extcard b { font-size: 15px; }
-.extcard span:not(.exticon) { font-weight: 400; font-size: 12px; color: var(--muted); line-height: 1.45; }
-.extcard i { font-style: normal; font-size: 12px; color: var(--accent); margin-top: 4px; }
-.extcard.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
-.extcard.on i { color: var(--ok); }
-.recbox { width: min(560px, 100%); max-height: calc(100% - 32px); overflow: auto; }
-.recbox h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 24px; }
-.recpanel { display: grid; gap: 8px; background: var(--bg); border-radius: 10px; padding: 10px; }
-.recpanel .grow { flex: 1; }
-.rectime { font: 600 14px var(--font-code); color: var(--muted); }
-.dlg-box .recpanel input#rec-name { flex: 1; min-width: 120px; width: auto; padding: 8px 10px; font-size: 14px; }
-.reclist { display: grid; gap: 6px; }
-.recitem { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 10px; padding: 6px 6px 6px 12px; }
-.recitem b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.recitem span { font: 12px var(--font-code); color: var(--muted); }
-.recitem button { height: 30px; font-size: 12px; }
-.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 120;
-  background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-weight: 600; max-width: min(560px, calc(100% - 32px)); box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+  .sh { width: 110px; height: 46px; border-radius: 12px; font-size: 15px; }
+  .sh.on { background: var(--accent); border-color: var(--accent); }
 
-/* 머신러닝 */
-.ml { position: fixed; inset: 0; z-index: 90; background: var(--bg); display: flex; flex-direction: column;
-  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
-.ml-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px var(--gutter-r) 10px var(--gutter-l); border-bottom: 1px solid var(--line); background: var(--surface); }
-.ml-head h2 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: 24px; flex: 1; }
-.ml-body { flex: 1; min-height: 0; overflow: auto; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; padding: 16px var(--gutter-r) 16px var(--gutter-l); }
-.ml-cam { display: grid; gap: 10px; align-content: start; min-width: 0; }
-.ml-cam .frame { position: relative; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 4 / 3; max-width: 100%; }
-.ml-cam video, .ml-mini video { width: 100%; height: 100%; object-fit: cover; display: block; }
-video.mirror { transform: scaleX(-1); }
-.ml-result { position: absolute; left: 12px; bottom: 12px; background: rgba(0,0,0,.65); color: #fff; padding: 8px 14px; border-radius: 10px; font: 400 26px var(--font-display); }
-.ml-status { background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 10px 12px; color: var(--muted); }
-.ml-bars { display: grid; gap: 6px; }
-.ml-bar { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: center; height: 30px; padding: 0 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; font-size: 13px; }
-.ml-bar i { position: absolute; left: 0; top: 0; bottom: 0; background: color-mix(in srgb, #B8458F 18%, transparent); }
-.ml-bar.on i { background: color-mix(in srgb, #B8458F 38%, transparent); }
-.ml-bar span, .ml-bar b { position: relative; } .ml-bar b { font-variant-numeric: tabular-nums; }
-.ml-side { display: grid; gap: 10px; align-content: start; min-width: 0; }
-.ml-tip { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
-.ml-card { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px; }
-.ml-thumb { width: 72px; height: 72px; border-radius: 8px; background: var(--bg); display: grid; place-items: center; overflow: hidden; font-size: 11px; color: var(--muted); }
-.ml-thumb img { width: 100%; height: 100%; object-fit: cover; }
-.ml-meta { display: grid; gap: 4px; align-content: center; min-width: 0; }
-.ml-name-row { display: flex; gap: 6px; align-items: center; }
-.ml-id { font: 600 12px var(--font-code); color: #B8458F; }
-.ml-name { font: 600 15px var(--font-ui); color: var(--ink); background: transparent; border: 1px solid transparent; border-radius: 6px; padding: 4px 6px; min-width: 0; width: 100%; }
-.ml-name:hover, .ml-name:focus { border-color: var(--line); background: var(--bg); }
-.ml-count { font-size: 12px; color: var(--muted); }
-.ml-actions { grid-column: 1 / -1; display: flex; gap: 6px; flex-wrap: wrap; }
-.ml-shot { flex: 1; justify-content: center; touch-action: none; user-select: none; -webkit-user-select: none; }
-.ml-mini { position: fixed; z-index: 80; right: calc(16px + env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  width: 200px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
-.ml-mini .frame { aspect-ratio: 4 / 3; background: #000; }
-.ml-mini .row { padding: 6px; justify-content: space-between; }
-.ml-mini b { font-size: 13px; padding-left: 4px; }
-.ml-mini button { height: 28px; padding: 0 8px; font-size: 12px; }
+  .dpad {
+    display: grid; grid-template-columns: repeat(3, 72px); grid-template-rows: repeat(3, 72px);
+    gap: 6px; justify-self: center;
+  }
+  .dpad .b { border-radius: 14px; font-size: 26px; }
+  .dpad .b.on { background: var(--accent); border-color: var(--accent); }
+  .dpad .up { grid-column: 2; grid-row: 1; }
+  .dpad .left { grid-column: 1; grid-row: 2; }
+  .dpad .right { grid-column: 3; grid-row: 2; }
+  .dpad .down { grid-column: 2; grid-row: 3; }
 
-@media (max-width: 900px) {
-  .tabs { display: flex; }
-  .work { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .splitter { display: none; }
-  .app:not(.show-code) .side { display: none; }
-  .app.show-code .blocks-pane { display: none; }
-  .work.code-hidden { grid-template-columns: minmax(0, 1fr); }
-  .app.show-code .work.code-hidden .side { display: flex; }
-  .codetab { display: none !important; }
-  .runbtn { padding: 0 14px; }
-  .ml-body { grid-template-columns: minmax(0, 1fr); }
-}
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
-/* 앱 화면 창: 디스플레이·선 그래프·막대 그래프 */
-.stagewin { position: fixed; z-index: 80; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 14px 34px rgba(0,0,0,.22); overflow: hidden; }
-.stagewin header { display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 12px; border-bottom: 1px solid var(--line); cursor: move; touch-action: none; user-select: none; }
-.stagewin header b { flex: 1; font-weight: 600; font-size: 13px; }
-.stagewin .sw-tools { display: flex; gap: 4px; }
-.stagewin button.sw-mini, .stagewin button.sw-x { height: 28px; padding: 0 9px; font-size: 12px; }
-.stagewin button.sw-x { width: 30px; padding: 0; }
-.sw-body { position: relative; padding: 8px; }
-.sw-disp { display: grid; place-items: center; padding: 12px; transition: background .2s; }
-.sw-disp-in { text-align: center; font-family: var(--font-display); line-height: 1.15; word-break: keep-all; overflow-wrap: anywhere; max-width: 100%; }
-.sw-disp-in.img { font-size: 150px !important; line-height: 1; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
-.sw-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; height: 18px; margin-top: 4px; font-size: 12px; color: var(--muted); }
-.sw-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
-.sw-bars { display: flex; align-items: stretch; justify-content: space-around; gap: 8px; padding: 10px 12px; }
-.sw-bar { flex: 1; max-width: 56px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 12px; }
-.sw-bar b { font: 600 13px var(--font-code); } .sw-bar span { color: var(--muted); }
-.sw-track { position: relative; flex: 1; width: 100%; background: var(--bg); border-radius: 6px; }
-.sw-fill { position: absolute; left: 0; right: 0; border-radius: 6px; transition: height .25s, bottom .25s; }
-.sw-zero { position: absolute; left: -4px; right: -4px; height: 1px; background: var(--muted); }
-.sw-empty { margin: auto; color: var(--muted); font-size: 13px; text-align: center; }
-/* 파일 메뉴·나만의 블록 고르기·잠금·찾아가기 */
-.filewrap { position: relative; }
-.filemenu { position: absolute; right: 0; top: calc(100% + 6px); z-index: 120; min-width: 230px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 6px; box-shadow: 0 14px 34px rgba(0,0,0,.2); display: grid; }
-.filemenu button { border: 0; background: transparent; text-align: left; height: 36px; padding: 0 10px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; font-weight: 500; }
-.filemenu button:hover, .filemenu button:focus-visible { background: var(--bg); }
-.filemenu kbd { font: 11px var(--font-code); color: var(--muted); }
-.filemenu hr { border: 0; border-top: 1px solid var(--line); margin: 4px 2px; }
-.fname { font-size: 13px; color: var(--muted); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fname::before { content: "📄 "; }
-.liblist { display: grid; gap: 6px; max-height: 50vh; overflow: auto; }
-.libitem { border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; align-items: flex-start; }
-.libitem span { display: grid; gap: 2px; } .libitem small { color: var(--muted); font-size: 12px; }
-.dlg-title { margin: 0; font-size: 18px; font-weight: 600; }
-.usespanel { position: fixed; z-index: 90; left: max(16px, env(safe-area-inset-left)); bottom: 16px; width: min(380px, calc(100vw - 32px)); background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-left: 4px solid #E8B10A; border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; box-shadow: 0 14px 34px rgba(0,0,0,.22); }
-.usespanel .hint { margin: 0; color: var(--muted); font-size: 13px; }
-.useslist { display: grid; gap: 6px; max-height: 40vh; overflow: auto; }
-.useslist button { text-align: left; height: auto; min-height: 36px; padding: 8px 10px; font-weight: 500; }
-.useslist button.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
-.pbw-flash > .blocklyPath { animation: pbwflash .55s ease-in-out 3; }
-@keyframes pbwflash { 50% { stroke: #FFC800; stroke-width: 6px; } }
-/* 로봇 줄 (연결·실행·정지) */
-.robotbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 0 var(--gutter-r) 8px var(--gutter-l); }
-.robotbar .grow { flex: 1; }
-.robotbar .hubs { min-width: 0; }
-.runpad { position: absolute; right: 22px; bottom: 22px; z-index: 4; display: flex; align-items: center; gap: 10px; }
-.runpad .runbtn { height: 52px; padding: 0 24px; font-size: 17px; box-shadow: 0 6px 18px rgba(47,163,91,.35); }
-.runpad .stopbtn { width: 52px; height: 52px; font-size: 18px; background: var(--surface); box-shadow: 0 4px 14px rgba(0,0,0,.12); }
-.blocklyZoom { translate: 0 -78px; }
-.runpad .stopbtn:disabled { opacity: 1; color: var(--line); }
-.runpad .runbtn:disabled { opacity: 1; background: #A9D8BA; border-color: #A9D8BA; box-shadow: none; }
-@media (max-width: 900px) { .runpad { right: 14px; bottom: 14px; } .runpad .runbtn { height: 44px; padding: 0 16px; font-size: 15px; } .runpad .stopbtn { width: 44px; height: 44px; } .blocklyZoom { translate: 0 -64px; } }
-.runbtn { height: 40px; padding: 0 20px; border-radius: 999px; background: #2FA35B; border-color: #2FA35B; color: #fff; font-weight: 700; font-size: 15px; }
-.runbtn:hover:not(:disabled) { background: #268A4C; }
-.stopbtn { width: 40px; height: 40px; padding: 0; justify-content: center; border-radius: 999px; color: var(--danger); font-size: 15px; }
-.runbtn:disabled, .stopbtn:disabled { opacity: .45; }
-#more-btn { width: 40px; padding: 0; justify-content: center; font-size: 18px; }
-.connmenu { left: 0; right: auto; min-width: 260px; }
-.connmenu button { height: auto; min-height: 38px; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 10px; }
-.connmenu small { font-size: 11px; color: var(--muted); font-weight: 400; }
-.menucheck { padding: 6px 10px; font-size: 13px; }
-.menulink { display: block; padding: 9px 10px; border-radius: 8px; color: var(--ink); text-decoration: none; font-weight: 500; }
-.menulink:hover { background: var(--bg); }
-#progress { display: block; height: 4px; margin: -4px var(--gutter-r) 6px var(--gutter-l); width: auto; }
-/* 파이썬 코드 숨기기 */
-.work { position: relative; }
-.work.code-hidden { grid-template-columns: minmax(0, 1fr) 0 0; }
-.work.code-hidden .side, .work.code-hidden .splitter { display: none; }
-.codetab { position: absolute; right: var(--gutter-r); top: 12px; z-index: 5; height: 34px; padding: 0 12px; border-radius: 10px 0 0 10px; box-shadow: 0 4px 14px rgba(0,0,0,.12); }
-/* 아래 출력 창 */
-.console { flex: 0 0 auto; display: flex; flex-direction: column; margin: 8px var(--gutter-r) 10px var(--gutter-l); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-.console-grip { height: 8px; cursor: row-resize; touch-action: none; display: flex; justify-content: center; align-items: center; flex: none; }
-.console-grip::before { content: ""; width: 44px; height: 4px; border-radius: 2px; background: var(--line); }
-.console-grip:hover::before, .console-grip.drag::before { background: var(--accent); }
-.console-head { display: flex; align-items: center; gap: 8px; padding: 0 10px 6px; font-size: 12px; color: var(--muted); min-width: 0; }
-.console-toggle { height: 30px; padding: 0 10px; font-weight: 600; }
-.console-toggle .caret { display: inline-block; transition: transform .15s; }
-.console.collapsed .console-toggle .caret { transform: rotate(-90deg); }
-.console-last { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 12px var(--font-code); }
-.console:not(.collapsed) .console-last { visibility: hidden; }
-.console .term { height: var(--consoleh, 140px); border-radius: 0; margin: 0; }
-.console.collapsed .term, .console.collapsed .console-grip { display: none; }
-.console.collapsed .console-head { padding-top: 6px; }
+  .face {
+    display: grid; grid-template-columns: repeat(3, 76px); grid-template-rows: repeat(3, 76px);
+    gap: 4px; justify-self: center;
+  }
+  .face .b { border-radius: 50%; font-size: 28px; }
+  .face .tri { grid-column: 2; grid-row: 1; color: var(--tri); }
+  .face .squ { grid-column: 1; grid-row: 2; color: var(--squ); }
+  .face .cir { grid-column: 3; grid-row: 2; color: var(--cir); }
+  .face .cro { grid-column: 2; grid-row: 3; color: var(--cro); }
+  .face .tri.on { background: var(--tri); border-color: var(--tri); color: var(--faceOn); }
+  .face .squ.on { background: var(--squ); border-color: var(--squ); color: var(--faceOn); }
+  .face .cir.on { background: var(--cir); border-color: var(--cir); color: var(--faceOn); }
+  .face .cro.on { background: var(--cro); border-color: var(--cro); color: var(--faceOn); }
+
+  .now { text-align: center; }
+  .now .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .now .cmd { font-size: 28px; font-weight: 800; margin-top: 4px; min-width: 150px; }
+  .now .key {
+    display: inline-block; margin-top: 6px; font-family: ui-monospace, monospace;
+    font-size: 13px; color: var(--muted); border: 1px solid var(--line);
+    border-radius: 6px; padding: 2px 8px;
+  }
+  .now .spd { margin-top: 8px; font-size: 13px; color: var(--muted); }
+
+  footer { margin-top: 10px; font-size: 12px; color: var(--muted); text-align: center; }
+  #verBtn {
+    font: inherit; font-size: 12px; color: var(--muted); background: none; cursor: pointer;
+    border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; margin-left: 4px;
+  }
+  .updatebar {
+    display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap;
+    margin: 0 0 12px; padding: 10px 14px; border-radius: 12px;
+    background: var(--accent); color: var(--accentText); font-weight: 700; font-size: 15px;
+  }
+  .updatebar[hidden] { display: none; }
+  .updatebar button {
+    font: inherit; font-size: 14px; font-weight: 800; cursor: pointer;
+    padding: 8px 16px; border-radius: 10px; border: 2px solid currentColor;
+    background: var(--card); color: var(--text);
+  }
+
+  @media (max-width: 760px) {
+    .stage { grid-template-columns: 1fr 1fr; padding-top: 74px; }
+    .now { grid-column: 1 / -1; order: -1; }
+    .dpad { grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(3, 56px); }
+    .face { grid-template-columns: repeat(3, 58px); grid-template-rows: repeat(3, 58px); }
+    .sh { width: 88px; }
+  }
+  @media (max-width: 420px) {
+    .stage { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
-<div class="app" id="app">
-  <header class="bar">
-    <div class="brand">
-      <h1><span class="stud" aria-hidden="true"></span>파이브릭스 단어블록</h1>
-      <span class="fname" id="fname" hidden></span>
-      <label class="hubsel"><span class="hubdot" aria-hidden="true"></span><span class="sr">허브 종류</span>
-        <select id="hubsel" aria-label="허브 종류"></select></label>
-    </div>
-    <div class="tools">
-      <select id="example" aria-label="예제 불러오기"></select>
-      <button class="iconbtn" id="undo" title="실행 취소" aria-label="실행 취소">↶</button>
-      <button class="iconbtn" id="redo" title="다시 실행" aria-label="다시 실행">↷</button>
-      <div class="filewrap">
-        <button id="file-btn" aria-haspopup="menu" aria-expanded="false">📁 파일</button>
-        <div class="filemenu" id="filemenu" role="menu" hidden>
-          <button role="menuitem" data-act="new">새로 만들기</button>
-          <button role="menuitem" data-act="open">열기…<kbd>Ctrl+O</kbd></button>
-          <button role="menuitem" data-act="save">저장<kbd>Ctrl+S</kbd></button>
-          <button role="menuitem" data-act="saveas">다른 이름으로 저장…</button>
-          <hr>
-          <button role="menuitem" data-act="py">파이썬(.py)으로 내보내기</button>
-          <hr>
-          <button role="menuitem" data-act="libin">나만의 블록 가져오기…</button>
-          <button role="menuitem" data-act="libout">나만의 블록 내보내기…</button>
-        </div>
-      </div>
-      <button id="ext-open" title="디스플레이·음악·듀얼쇼크 같은 블록 묶음을 켜고 꺼요">🧩 확장 기능</button>
-      <button class="mlbtn" id="ml-open">🧠 머신러닝</button>
-      <button class="iconbtn" id="about-open" title="만든 도구와 라이선스" aria-label="만든 도구와 라이선스">ⓘ</button>
-    </div>
-  </header>
-  <!-- 로봇 줄: 스파이크 앱처럼 연결·실행·정지를 위쪽에 -->
-  <div class="robotbar" role="toolbar" aria-label="허브 연결과 실행">
-    <div class="filewrap">
-      <button class="primary" id="connect">🔵 스파이크 연결</button>
-      <div class="filemenu connmenu" id="connmenu" role="menu" hidden>
-        <button role="menuitem" data-via="usb">🔌 USB 케이블로 연결</button>
-        <button role="menuitem" data-via="bt">📶 블루투스로 연결<small>먼저 컴퓨터 블루투스 설정에서 EV3를 페어링해 주세요 · Pybricks 4.1 이상</small></button>
-      </div>
-    </div>
-    <div class="hubs" id="hubs"><span class="muted">연결된 허브가 없어요</span></div>
-    <span class="grow"></span>
-    <button id="portview" disabled title="연결된 모터·센서 값을 아래 포트 칸에 보여줘요">📊 포트 보기</button>
-    <div class="filewrap">
-      <button id="more-btn" aria-haspopup="menu" aria-expanded="false" title="펌웨어 설치, 허브 없이 체험">⋯</button>
-      <div class="filemenu" id="moremenu" role="menu" hidden>
-        <button role="menuitem" id="fw-open" title="레고 공식 펌웨어를 Pybricks 펌웨어로 바꿔요">펌웨어 설치…</button>
-        <button role="menuitem" id="demo" title="허브 없이 연결·실행·포트 보기가 어떻게 보이는지 체험해요">허브 없이 체험</button>
-        <hr>
-        <label class="check menucheck"><input type="checkbox" id="autoports" checked> 연결하면 포트 값 자동으로 보기</label>
-        <hr>
-        <a class="menulink" href="https://code.pybricks.com" target="_blank" rel="noopener">Pybricks Code 열기 ↗</a>
-      </div>
-    </div>
-  </div>
-  <progress id="progress" max="1" value="0" hidden></progress>
-  <div class="ports" id="ports" hidden></div>
-  <div class="tabs" role="tablist">
-    <button role="tab" id="tab-blocks" aria-selected="true">블록</button>
-    <button role="tab" id="tab-code" aria-selected="false">파이썬 코드</button>
-  </div>
-  <main class="work">
-    <section class="pane blocks-pane" aria-label="블록 작업대">
-      <div class="loading" id="loading">블록을 불러오는 중…</div>
-      <div id="blockly"></div>
-      <!-- 실행·정지: 블록 작업대 오른쪽 아래 (휴지통 자리). 블록 지우기는 왼쪽 목록으로 끌어다 놓아요 -->
-      <div class="runpad" role="group" aria-label="실행과 정지">
-        <button class="stopbtn" id="stop" disabled title="정지" aria-label="정지">■</button>
-        <button class="runbtn" id="run" disabled title="허브에 내려받고 실행해요">▶ 실행</button>
-      </div>
-    </section>
-    <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" aria-label="패널 크기 조절 (끌거나 화살표 키, 두 번 누르면 처음 크기)" tabindex="0"></div>
-    <section class="pane side" aria-label="파이썬 코드">
-      <div class="code-head">
-        <h2><b>main.py</b> · Pybricks <span class="chip" id="mode" hidden>이벤트 모드</span></h2>
-        <div class="headbtns">
-          <button id="copy">코드 복사</button>
-          <button class="iconbtn" id="code-fold" title="파이썬 코드 숨기기 (블록 작업대를 넓게)" aria-label="파이썬 코드 숨기기">›</button>
-        </div>
-      </div>
-      <div class="code-body"><pre id="out"></pre></div>
-    </section>
-    <button class="codetab" id="code-open" hidden title="파이썬 코드 보기">‹ 파이썬</button>
-  </main>
-  <!-- 출력 창: 다른 프로그래밍 도구처럼 아래에 붙어 있고, 접거나 높이를 바꿀 수 있어요 -->
-  <section class="console" id="console" aria-label="출력">
-    <div class="console-grip" id="console-grip" role="separator" aria-orientation="horizontal" aria-label="출력 창 높이 조절" tabindex="0"></div>
-    <div class="console-head">
-      <button class="console-toggle" id="console-toggle" aria-expanded="true"><span class="caret">▾</span> 출력</button>
-      <span class="console-last" id="console-last"></span>
-      <span id="padstat">🎮 없음</span>
-      <button id="term-clear">지우기</button>
-    </div>
-    <div class="term" id="term" aria-live="polite"><div class="dim">허브를 연결하고 ▶ 실행을 누르면, 로봇의 print 출력이 여기에 나와요.</div></div>
-  </section>
+
+<div id="updateBar" class="updatebar" hidden>
+  <span id="updateText">새 버전이 있어요</span>
+  <button id="updateNow" type="button">지금 업데이트</button>
 </div>
 
-<!-- 머신러닝 -->
-<div class="ml" id="ml" hidden role="dialog" aria-modal="true" aria-label="머신러닝">
-  <div class="ml-head">
-    <h2>🧠 머신러닝</h2>
-    <button id="ml-flip">카메라 바꾸기</button>
-    <button id="ml-off">카메라 끄기</button>
-    <button class="primary" id="ml-close">블록으로 돌아가기</button>
+<header>
+  <h1>로봇 조종기</h1>
+  <div class="chips">
+    <span id="padChip" class="chip"><span class="dot"></span><span>컨트롤러 없음</span></span>
+    <span id="hubChip" class="chip"><span class="dot"></span><span>허브 미연결</span></span>
   </div>
-  <div class="ml-body">
-    <div class="ml-cam">
-      <div class="frame"><video id="ml-video" playsinline muted></video><div class="ml-result" id="ml-result">꺼짐</div></div>
-      <div class="ml-status" id="ml-status" hidden></div>
-      <div class="ml-bars" id="ml-bars"></div>
-    </div>
-    <div class="ml-side">
-      <p class="ml-tip">이름마다 <b>📸 버튼을 누르고 있으면</b> 사진이 계속 찍혀요. 이름마다 20장 넘게, 여러 각도로 찍으면 잘 알아봐요.
-        아무것도 없을 때를 위한 <b>'배경'</b>도 찍어 두세요. 블록에서는 <b>#번호</b>로 구분하고, 허브가 실행 중이면 인식한 번호를 계속 보내요.</p>
-      <div id="ml-classes" style="display:grid;gap:10px"></div>
-      <button id="ml-add">+ 이름 추가</button>
-    </div>
-  </div>
-</div>
-<div class="ml-mini" id="ml-mini" hidden>
-  <div class="frame"><video id="ml-mini-video" playsinline muted></video></div>
-  <div class="row"><b id="ml-mini-label">…</b><span><button id="ml-mini-open">열기</button> <button id="ml-mini-stop">끄기</button></span></div>
+</header>
+
+<div class="bar">
+  <button id="connectBtn" class="primary">허브 연결</button>
+  <button id="switchBtn" class="ghost" hidden>🔄 다른 허브</button>
+  <button id="stopBtn" class="ghost">전체 정지</button>
+  <button id="findBtn" class="ghost" disabled>🔔 내 로봇 찾기</button>
+  <button id="setupBtn" class="ghost">🧰 허브 준비</button>
+  <button id="settingsBtn" class="ghost">⚙ 설정</button>
+  <div id="msg" class="msg">듀얼쇼크 아무 버튼이나 한 번 누르면 인식돼요.</div>
 </div>
 
-<!-- 처음 시작: 허브 고르기 -->
-<div class="dlg" id="welcome" hidden>
-  <div class="dlg-box welcome" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-    <h2 id="welcome-title">어떤 허브로 코딩할까요?</h2>
-    <p class="hint">위쪽 허브 목록에서 언제든 바꿀 수 있어요. 허브마다 작업이 따로 저장돼요.</p>
-    <div class="pick" id="welcome-pick"></div>
-  </div>
+<div id="hubNotice" class="notice" hidden>
+  <span id="hubNoticeText"><b>허브의 조종 프로그램이 예전 버전이에요.</b> 새 기능이 동작하지 않을 수 있어요.</span>
+  <button id="hubNoticeBtn" type="button" class="primary">지금 허브에 넣기</button>
 </div>
 
-<!-- 소리 녹음 -->
-<section class="usespanel" id="uses" hidden aria-live="polite" aria-labelledby="uses-title">
-  <h2 id="uses-title" class="dlg-title"></h2>
-  <p class="hint" id="uses-hint"></p>
-  <div class="useslist" id="uses-list"></div>
-  <div class="dlg-actions"><button class="warn" id="uses-delete">모두 지우기…</button><button class="primary" id="uses-close">닫기</button></div>
-</section>
-<div class="dlg" id="lib" hidden>
-  <div class="dlg-box" role="dialog" aria-modal="true" aria-labelledby="lib-title">
-    <h2 id="lib-title" class="dlg-title">나만의 블록</h2>
-    <p class="hint" id="lib-hint"></p>
-    <div class="liblist" id="lib-list"></div>
-    <div class="dlg-actions"><button id="lib-cancel">취소</button><button class="primary" id="lib-ok">확인</button></div>
-  </div>
-</div>
-<div class="dlg" id="rec" hidden>
-  <div class="dlg-box recbox" role="dialog" aria-modal="true" aria-labelledby="rec-title">
-    <h2 id="rec-title">🎙 소리 녹음</h2>
-    <p class="hint">녹음한 소리는 이 기기에 저장되고, '소리 재생' 블록에서 골라 쓸 수 있어요. 소리는 웹앱이 켜진 노트북·태블릿에서 나요.</p>
-    <div class="recpanel">
-      <div class="row">
-        <button class="primary" id="rec-start">● 녹음 시작</button>
-        <button class="warn" id="rec-stop" hidden>■ 멈추기</button>
-        <span class="rectime" id="rec-time">최대 10초</span>
-        <span class="grow"></span>
-        <button id="rec-file">소리 파일 가져오기</button>
-        <input type="file" id="rec-input" accept="audio/*" hidden>
-      </div>
-      <div class="row" id="rec-draft" hidden>
-        <button id="rec-preview">▶ 들어보기</button>
-        <input id="rec-name" maxlength="12" aria-label="소리 이름" placeholder="소리 이름">
-        <button class="primary" id="rec-save">저장</button>
-        <button id="rec-discard">버리기</button>
-      </div>
-    </div>
-    <p class="fw-status" id="rec-status" hidden></p>
-    <div class="reclist" id="rec-list"></div>
-    <div class="dlg-actions"><button class="primary" id="rec-close">닫기</button></div>
-  </div>
-</div>
-
-<!-- 확장 기능 -->
-<div class="dlg" id="ext" hidden>
-  <div class="dlg-box extbox" role="dialog" aria-modal="true" aria-labelledby="ext-title">
-    <h2 id="ext-title">🧩 확장 기능</h2>
-    <p class="hint">필요한 것만 켜면 왼쪽 블록 목록에 나와요. 예제를 불러오면 필요한 확장은 자동으로 켜져요.</p>
-    <div class="extlist" id="ext-list"></div>
-    <div class="dlg-actions"><button class="primary" id="ext-close">닫기</button></div>
-  </div>
-</div>
-
-<!-- 펌웨어 설치 -->
-<div class="dlg" id="fw" hidden>
-  <div class="dlg-box fwbox" role="dialog" aria-modal="true" aria-labelledby="fw-title">
-    <h2 id="fw-title">Pybricks 펌웨어 설치</h2>
-    <p class="hint" id="fw-intro"></p>
-    <label class="field" for="fw-name">허브 이름 <span class="muted">(선택, 여러 대일 때 구분하기 좋아요)</span>
-      <input id="fw-name" maxlength="15" placeholder="예: 1조 로봇" autocomplete="off"></label>
-    <p class="err" id="fw-name-err" hidden>이름이 너무 길어요. 영어 15자, 한글 5자까지 돼요.</p>
-    <ol class="steps" id="fw-steps"></ol>
-    <details class="fw-help" id="fw-win" hidden>
-      <summary>윈도우에서 목록에 허브가 안 보이면</summary>
-      <ol class="steps small">
-        <li>시작 버튼을 오른쪽 클릭 → <b>장치 관리자</b></li>
-        <li><b>기타 장치</b>에서 <b>LEGO Technic Large Hub in DFU Mode</b>를 오른쪽 클릭 → <b>속성</b> (노란 경고 표시가 없으면 이미 됐어요)</li>
-        <li><b>드라이버 업데이트</b> → <b>내 컴퓨터에서 드라이버 찾아보기</b> → <b>사용 가능한 드라이버 목록에서 직접 선택</b></li>
-        <li><b>범용 직렬 버스 장치</b> → 제조업체·모델 모두 <b>WinUsb Device</b> → 다음 → 경고가 떠도 <b>예</b></li>
-        <li>창을 닫고 다시 <b>설치 시작</b>을 눌러요</li>
+<section id="setup" class="setup" hidden>
+  <h2>허브 준비 <span style="font-weight:400;font-size:13px;color:var(--muted)">· 허브마다 처음 한 번만 하면 돼요</span></h2>
+  <p>레고 허브로 이 조종기를 쓰려면 두 가지가 필요해요. ① 허브의 운영체제를 <b>Pybricks</b>로 바꾸기, ② 허브에 <b>조종 프로그램</b> 넣기.</p>
+  <div class="steps">
+    <article class="stepcard">
+      <h3><span class="num">1</span>Pybricks 펌웨어 설치</h3>
+      <p><b>이미 했다면 건너뛰세요.</b> 위의 '허브 연결'을 눌렀을 때 목록에 허브가 보이면 이미 Pybricks예요.</p>
+      <details>
+        <summary>펌웨어가 뭐예요?</summary>
+        <p>허브 안에서 도는 운영체제예요. 처음 산 SPIKE 허브에는 레고 펌웨어가 들어 있어서 SPIKE 앱으로만 연결돼요. Pybricks 펌웨어로 바꾸면 허브가 파이썬을 실행하고, 이 조종기와 블루투스로 대화할 수 있게 돼요. 언제든 레고 펌웨어로 되돌릴 수 있어요.</p>
+      </details>
+      <ol>
+        <li><b>컴퓨터의 크롬</b>과 <b>허브 USB 선</b>을 준비해요. (태블릿보다 컴퓨터가 확실해요)</li>
+        <li>아래 버튼으로 Pybricks 공식 설치 화면을 열어요.</li>
+        <li>오른쪽 위 메뉴에서 <b>Install Pybricks Firmware</b>(펌웨어 설치)를 눌러요.</li>
+        <li>허브 종류에서 <b>SPIKE Prime</b>을 고르고, 라이선스에 동의해요.</li>
+        <li>허브 이름을 정해요. 예: <b>1조</b>. 연결할 때 이 이름이 보여요.</li>
+        <li>화면에 나오는 영상대로 USB 선을 연결하고 허브 버튼을 누르면 설치가 시작돼요.</li>
+        <li>다 끝나면 그 <b>탭을 닫고</b> 2단계로 와요.</li>
       </ol>
-    </details>
-    <label class="check"><input type="checkbox" id="fw-agree"> Pybricks 펌웨어는 MIT 라이선스 오픈소스이고, 문제가 생겨도 책임은 사용자에게 있다는 것을 확인했어요.</label>
-    <progress id="fw-progress" max="1" value="0" hidden></progress>
-    <p class="fw-status" id="fw-status" role="status"></p>
-    <p class="hint small" id="fw-restore"></p>
-    <div class="dlg-actions"><button id="fw-close">닫기</button><button class="primary" id="fw-start" disabled>설치 시작</button></div>
-  </div>
-</div>
+      <a class="linkbtn" href="https://code.pybricks.com" target="_blank" rel="noopener">Pybricks 설치 화면 열기 ↗</a>
+      <p class="muted">설치 화면은 인터넷이 필요해요. 윈도우에서는 처음 한 번 드라이버 설치 안내가 나올 수 있어요. 레고 펌웨어로 되돌리려면 같은 메뉴의 <b>Restore official LEGO firmware</b>를 쓰면 돼요.</p>
+    </article>
 
-<!-- 만든 도구와 라이선스 -->
-<div class="dlg" id="about" hidden>
-  <div class="dlg-box about" role="dialog" aria-modal="true" aria-labelledby="about-title">
-    <h2 id="about-title">만든 도구와 라이선스</h2>
-    <p class="hint">이 앱은 아래 오픈소스 덕분에 무료로 만들 수 있었어요. 라이선스 원문은 앱 폴더의 LICENSES에 있어요.</p>
-    <ul class="credits">
-      <li><b>Pybricks</b> <span>MIT</span><br>허브 펌웨어, 파이썬 명령, 통신 방식. 이 앱은 Pybricks 공식 블록 코딩과 별개로 만든 수업용 도구예요.</li>
-      <li><b>Blockly</b> (Google) <span>Apache 2.0</span><br>블록 작업대</li>
-      <li><b>TensorFlow.js · MobileNet</b> (Google) <span>Apache 2.0</span><br>카메라 머신러닝</li>
-      <li><b>mpy-cross</b> (MicroPython · Pybricks) <span>MIT</span><br>파이썬 코드를 허브용으로 바꾸기</li>
-      <li><b>Pybricks 펌웨어 4.1.1 · 설치 도구 · Pybricks Code</b> <span>MIT</span><br>펌웨어 파일과 펌웨어 설치 방식</li>
-      <li><b>Do Hyeon · IBM Plex Sans KR · JetBrains Mono</b> <span>OFL 1.1</span><br>글꼴</li>
-    </ul>
-    <div class="support">
-      <p><b>Pybricks 팀을 응원해 주세요.</b> 작은 팀이 후원과 블록 코딩 수익으로 펌웨어를 계속 만들고 있어요.</p>
-      <a class="linkbtn primary" href="https://pybricks.com/about/premium/" target="_blank" rel="noopener">Pybricks 후원하기 ↗</a>
+    <article class="stepcard">
+      <h3><span class="num">2</span>조종 프로그램 넣기</h3>
+      <p>허브에 <b>조종 프로그램</b>(hub_program)을 블루투스로 넣어요. Pybricks Code 사이트에 갈 필요 없어요.</p>
+      <ol>
+        <li>허브 전원을 켜요. (Pybricks Code 탭은 닫아 두세요)</li>
+        <li>아래 버튼을 누르고 허브를 골라요. 이미 연결돼 있으면 바로 시작해요.</li>
+        <li>진행 막대가 끝나면 끝. 바로 조종할 수 있어요.</li>
+      </ol>
+      <button id="installBtn" type="button" class="primary">허브에 조종 프로그램 넣기</button>
+      <div id="installProgress" class="progress" hidden><div></div></div>
+      <div id="installMsg" class="installmsg"></div>
+      <p class="muted">허브에 있던 다른 프로그램은 지워지고 조종 프로그램으로 바뀌어요. 넣은 프로그램은 허브 버튼으로 전원을 끄면 저장돼서 다음에 켜도 남아 있어요.</p>
+    </article>
+  </div>
+</section>
+
+<section id="settings" class="settings" hidden>
+  <h3 style="margin-top:0">화면 색 <small>누르면 바로 바뀌어요</small></h3>
+  <div class="themes" id="themes"></div>
+
+  <h3>조종</h3>
+  <div class="sgrid">
+    <label class="field">
+      <span class="name">직진 속도</span>
+      <span class="inrow"><input type="number" id="sSpeed" inputmode="numeric"><span class="unit">mm/s</span></span>
+    </label>
+    <label class="field">
+      <span class="name">회전 속도</span>
+      <span class="inrow"><input type="number" id="sTurn" inputmode="numeric"><span class="unit">도/초</span></span>
+    </label>
+    <label class="field">
+      <span class="name">팔 속도</span>
+      <span class="inrow"><input type="number" id="sArm" inputmode="numeric"><span class="unit">도/초</span></span>
+    </label>
+    <label class="field">
+      <span class="name">집게 속도</span>
+      <span class="inrow"><input type="number" id="sGrip" inputmode="numeric"><span class="unit">도/초</span></span>
+    </label>
+    <label class="field">
+      <span class="name">대각선 곡선 (▲+◀ 등 동시에 누를 때)</span>
+      <span class="inrow"><input type="number" id="sDiag" inputmode="numeric"><span class="unit">도/초</span></span>
+    </label>
+    <label class="field wide">
+      <span class="name">회전 방식 · <span class="curve-now" id="curveText"></span></span>
+      <input type="range" id="sCurve" min="0" max="200" step="10">
+      <span class="curve-scale"><span>0 스핀턴</span><span>100 피벗턴</span><span>200 큰 곡선</span></span>
+    </label>
+  </div>
+
+  <h3>로봇 구조 <small>바꾸고 저장하면 허브 프로그램이 다시 시작돼요</small></h3>
+  <div class="sgrid">
+    <div class="field">
+      <span class="name">왼쪽 바퀴 포트</span>
+      <span class="inrow"><select id="sLp"></select><label class="chk"><input type="checkbox" id="sLinv">반대로</label></span>
     </div>
-    <p class="hint small">LEGO, SPIKE, MINDSTORMS는 레고 그룹의 상표이고, HuskyLens는 DFRobot의 상표예요. 이 앱은 레고 그룹이나 Pybricks 팀이 만들거나 보증한 제품이 아니에요.</p>
-    <div class="dlg-actions"><button class="primary" id="about-close">닫기</button></div>
+    <div class="field">
+      <span class="name">오른쪽 바퀴 포트</span>
+      <span class="inrow"><select id="sRp"></select><label class="chk"><input type="checkbox" id="sRinv">반대로</label></span>
+    </div>
+    <div class="field">
+      <span class="name">팔 포트</span>
+      <span class="inrow"><select id="sAp"></select><label class="chk"><input type="checkbox" id="sAinv">반대로</label></span>
+    </div>
+    <div class="field">
+      <span class="name">집게 포트</span>
+      <span class="inrow"><select id="sGp"></select><label class="chk"><input type="checkbox" id="sGinv">반대로</label></span>
+    </div>
+    <div class="field">
+      <span class="name">바퀴 지름</span>
+      <span class="inrow"><input type="number" id="sWheel" inputmode="numeric"><span class="unit">mm</span></span>
+      <span class="inrow">
+        <button type="button" class="mini" data-wheel="88">큰 바퀴 88</button>
+        <button type="button" class="mini" data-wheel="56">기본 바퀴 56</button>
+      </span>
+    </div>
+    <div class="field">
+      <span class="name">바퀴 간격 (양쪽 바퀴 가운데끼리)</span>
+      <span class="inrow"><input type="number" id="sAxle" inputmode="numeric"><span class="unit">mm</span></span>
+    </div>
   </div>
-</div>
 
-<div class="dlg" id="dlg" hidden>
-  <div class="dlg-box" role="dialog" aria-modal="true" aria-labelledby="dlg-msg">
-    <p id="dlg-msg"></p>
-    <p class="hint" id="dlg-hint" hidden></p>
-    <input id="dlg-input" autocomplete="off" hidden>
-    <p class="err" id="dlg-err" hidden></p>
-    <div class="dlg-actions"><button id="dlg-cancel">취소</button><button class="primary" id="dlg-ok">확인</button></div>
+  <div class="srow">
+    <button id="saveBtn" class="primary">저장</button>
+    <button id="resetBtn" class="ghost">기본값으로</button>
+    <span id="saveMsg" class="savemsg"></span>
   </div>
-</div>
-<div class="toast" id="toast" role="status" hidden></div>
+</section>
 
-<script src="lib/blockly_compressed.js"></script>
-<script src="lib/blocks_compressed.js"></script>
-<script src="lib/python_compressed.js"></script>
-<script src="lib/msg/ko.js"></script>
-<script src="js/hubs.js?v=18"></script>
-<script src="js/stage.js?v=18"></script>
-<script src="js/blocks.js?v=18"></script>
-<script src="js/hub.js?v=18"></script>
-<script src="js/firmware.js?v=18"></script>
-<script src="js/ml.js?v=18"></script>
-<script src="js/sound.js?v=18"></script>
-<script src="js/recorder.js?v=18"></script>
-<script src="js/project.js?v=18"></script>
-<script src="js/app.js?v=18"></script>
+<section class="stage">
+  <div class="shoulders">
+    <div class="b sh" data-btn="l1">L1<small>속도 ↓</small></div>
+    <div class="b sh" data-btn="r1">R1<small>속도 ↑</small></div>
+  </div>
+
+  <div class="dpad">
+    <div class="b up" data-btn="up">▲</div>
+    <div class="b left" data-btn="left">◀</div>
+    <div class="b right" data-btn="right">▶</div>
+    <div class="b down" data-btn="down">▼</div>
+  </div>
+
+  <div class="now">
+    <div class="label">현재 동작</div>
+    <div class="cmd" id="cmdText">정지</div>
+    <div class="key" id="cmdKey">S</div>
+    <div class="spd" id="spdText"></div>
+  </div>
+
+  <div class="face">
+    <div class="b tri" data-btn="triangle">△<small>팔 ↑</small></div>
+    <div class="b squ" data-btn="square">□<small>팔 ↓</small></div>
+    <div class="b cir" data-btn="circle">○<small>펴기</small></div>
+    <div class="b cro" data-btn="cross">✕<small>잡기</small></div>
+  </div>
+</section>
+
+<footer>화면 버튼을 손가락으로 눌러도 조종돼요 · Pybricks Code 탭은 닫고 연결하세요 · <span id="verText"></span><button id="verBtn" type="button">업데이트 확인</button></footer>
+
 <script>
-  // 파일 일부만 새 버전으로 받아졌을 때(브라우저 캐시) 안내해요
-  if (!window.PBW || !PBW.HUBS || !PBW.toolbox || !PBW.Project) {
-    var l = document.getElementById("loading");
-    if (l) { l.hidden = false; l.innerHTML = "새 버전 파일을 다 받지 못했어요.<br>새로고침해 주세요 (윈도우 <b>Ctrl+Shift+R</b>, 맥 <b>Cmd+Shift+R</b>)<br><br><button onclick=\"location.reload()\">새로고침</button>"; }
+// ===== 앱 버전 (고칠 때마다 올리기) =====
+const APP_VERSION = "v16";
+document.getElementById("verText").textContent = APP_VERSION;
+
+// ===== 화면 색 테마 =====
+const THEMES = [
+  { id: "night",  name: "밤하늘", bg: "#0f141b", dot: "#3fa7ff" },
+  { id: "light",  name: "하얀색", bg: "#eef2f7", dot: "#1f74d8" },
+  { id: "ocean",  name: "바다",   bg: "#061a2b", dot: "#23c4e8" },
+  { id: "forest", name: "숲",     bg: "#0c1a11", dot: "#4fd27b" },
+  { id: "space",  name: "우주",   bg: "#130e23", dot: "#9d6cff" },
+  { id: "berry",  name: "딸기",   bg: "#fff0f5", dot: "#e8457f" },
+  { id: "lemon",  name: "레몬",   bg: "#fffbe8", dot: "#f0a500" },
+];
+function applyTheme(id, save) {
+  const t = THEMES.find((x) => x.id === id) || THEMES[0];
+  if (t.id === "night") delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme = t.id;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", t.bg);   // 안드로이드 위쪽 상태바 색
+  document.querySelectorAll(".theme-pick").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.theme === t.id)));
+  if (save) { try { localStorage.setItem("robot-pad-theme", t.id); } catch (e) {} }
+}
+(function buildThemePicker() {
+  const box = document.getElementById("themes");
+  for (const t of THEMES) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "theme-pick";
+    b.dataset.theme = t.id;
+    const sw = document.createElement("span");
+    sw.className = "sw";
+    sw.style.background = `linear-gradient(135deg, ${t.bg} 50%, ${t.dot} 50%)`;
+    b.append(sw, document.createTextNode(t.name));
+    b.addEventListener("click", () => applyTheme(t.id, true));
+    box.appendChild(b);
   }
-</script>
-<script>
-  if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  let saved = "night";
+  try { saved = localStorage.getItem("robot-pad-theme") || "night"; } catch (e) {}
+  applyTheme(saved, false);
+})();
+
+// ===== 파이브릭스 허브 BLE 정보 (고정값) =====
+const PYBRICKS_SERVICE = "c5f50001-8280-46da-89f4-6d8051e4aeef";
+const PYBRICKS_CHAR    = "c5f50002-8280-46da-89f4-6d8051e4aeef";
+const CMD_STOP_PROGRAM  = 0x00;
+const CMD_START_PROGRAM = 0x01;
+const CMD_WRITE_STDIN   = 0x06;
+const CMD_WRITE_PROGRAM_META = 0x03;   // 프로그램 크기 알리기
+const CMD_WRITE_USER_RAM     = 0x04;   // 프로그램 내용 쓰기
+const PYBRICKS_CAPS = "c5f50003-8280-46da-89f4-6d8051e4aeef";   // 허브 능력 (한 번에 쓸 수 있는 크기 등)
+const CAP_MPY6 = 2, CAP_MPY6_1 = 4, CAP_MPY6_3 = 32;           // 허브가 받아 주는 프로그램 형식
+const HUB_PROGRAM_VERSION = 2;          // 이 앱과 같이 배포하는 hub_program.bin의 버전
+const EVENT_STATUS      = 0x00;
+const EVENT_STDOUT      = 0x01;
+const FLAG_LOW_BATTERY     = 1 << 0;
+const FLAG_PROGRAM_RUNNING = 1 << 6;
+const KEEPALIVE_MS = 250;   // 허브에 "앱 살아 있음" 신호 보내는 간격 (허브는 1초 끊기면 정지)
+
+// ===== 크롬 표준 게임패드 버튼 번호 (듀얼쇼크) =====
+const BTN = {
+  cross: 0, circle: 1, square: 2, triangle: 3,
+  l1: 4, r1: 5,
+  up: 12, down: 13, left: 14, right: 15,
+};
+
+// 방향키 → 허브로 보낼 글자 (두 개 같이 누르면 대각선 곡선 주행)
+//   G: 앞+왼쪽  H: 앞+오른쪽  J: 뒤+왼쪽  K: 뒤+오른쪽
+function dpadCommand(up, down, left, right) {
+  if (up && down) { up = false; down = false; }       // 반대 방향 동시 → 무시
+  if (left && right) { left = false; right = false; }
+  if (up && left) return "G";
+  if (up && right) return "H";
+  if (down && left) return "J";
+  if (down && right) return "K";
+  if (up) return "F";
+  if (down) return "B";
+  if (left) return "L";
+  if (right) return "R";
+  return null;
+}
+// 방향키가 없을 때 우선순위
+const ORDER = [
+  ["triangle", "T"], ["square", "Q"], ["cross", "X"], ["circle", "O"],
+];
+
+const LABEL = {
+  F: "앞으로", B: "뒤로", L: "왼쪽 회전", R: "오른쪽 회전",
+  G: "앞 왼쪽 곡선", H: "앞 오른쪽 곡선", J: "뒤 왼쪽 곡선", K: "뒤 오른쪽 곡선",
+  T: "팔 올리기", Q: "팔 내리기", X: "집게 잡기", O: "집게 펴기", S: "정지",
+};
+
+// ===== 로봇 설정 =====
+const PORTS = ["A", "B", "C", "D", "E", "F"];
+const DEFAULTS = {
+  name: "로봇 1",
+  // 조종
+  speed: 200, turn: 120, curve: 0, arm: 300, grip: 300, diag: 60,
+  // 구조
+  lp: "E", rp: "F", ap: "A", gp: "D",
+  linv: true, rinv: false, ainv: false, ginv: false,
+  wheel: 88, axle: 112,
+};
+const NUM_LIMITS = {
+  speed: [50, 800], turn: [30, 500], curve: [0, 200], arm: [50, 1000], grip: [50, 1000], diag: [10, 500],
+  wheel: [20, 200], axle: [40, 300],
+};
+const STRUCT_KEYS = ["lp", "rp", "ap", "gp", "linv", "rinv", "ainv", "ginv", "wheel", "axle"];
+const SPEED_STEP = 50;
+const STORE_KEY = "robot-pad-v3";
+const OLD_STORE_KEY = "robot-pad-settings";
+
+// ===== 화면 요소 =====
+const $ = (id) => document.getElementById(id);
+const connectBtn = $("connectBtn");
+const msg = $("msg");
+const btnEls = {};
+document.querySelectorAll("[data-btn]").forEach((el) => { btnEls[el.dataset.btn] = el; });
+
+const inp = {
+  speed: $("sSpeed"), turn: $("sTurn"), curve: $("sCurve"), arm: $("sArm"), grip: $("sGrip"), diag: $("sDiag"),
+  lp: $("sLp"), rp: $("sRp"), ap: $("sAp"), gp: $("sGp"),
+  linv: $("sLinv"), rinv: $("sRinv"), ainv: $("sAinv"), ginv: $("sGinv"),
+  wheel: $("sWheel"), axle: $("sAxle"),
+};
+
+// 포트 선택칸 채우기 (팔·집게는 "없음" 가능)
+function fillPortSelect(sel, allowNone) {
+  sel.innerHTML = "";
+  for (const p of PORTS) sel.add(new Option(p, p));
+  if (allowNone) sel.add(new Option("없음", "-"));
+}
+fillPortSelect(inp.lp, false);
+fillPortSelect(inp.rp, false);
+fillPortSelect(inp.ap, true);
+fillPortSelect(inp.gp, true);
+
+// ===== 숫자 칸 범위 안내 + 넘으면 자동으로 맞춤 =====
+const FIELD_NAMES = {
+  speed: "직진 속도", turn: "회전 속도", arm: "팔 속도", grip: "집게 속도",
+  diag: "대각선 곡선", wheel: "바퀴 지름", axle: "바퀴 간격",
+};
+const FIELD_TIPS = {
+  diag: "작을수록 완만하게, 클수록 급하게 돌아요",
+  turn: "제자리 회전 빠르기",
+};
+const hints = {};
+const MOTOR_MAX_DEG = 1000;   // SPIKE 모터가 실제로 낼 수 있는 대략의 최고 속도 (도/초)
+
+function rangeText(k) {
+  const [lo, hi] = NUM_LIMITS[k];
+  let t = `범위 ${lo} ~ ${hi}`;
+  if (FIELD_TIPS[k]) t += ` · ${FIELD_TIPS[k]}`;
+  if (k === "speed") {
+    const w = Number(inp.wheel.value) || DEFAULTS.wheel;
+    const real = Math.round((w * Math.PI * MOTOR_MAX_DEG) / 360 / 10) * 10;
+    t += ` · 이 바퀴로 실제 최고 약 ${real}`;
+  }
+  return t;
+}
+function resetHint(k) {
+  hints[k].textContent = rangeText(k);
+  hints[k].className = "hint";
+  inp[k].classList.remove("warn");
+}
+// 칸에 적힌 값을 범위 안으로. 바뀌었으면 안내 문구 반환
+function fixField(k) {
+  const raw = String(inp[k].value).trim();
+  const n = Number(raw);
+  if (raw === "" || !Number.isFinite(n)) return null;   // 비우거나 글자면 저장 때 원래 값 유지
+  const [lo, hi] = NUM_LIMITS[k];
+  const v = Math.min(hi, Math.max(lo, Math.round(n)));
+  if (v === n) return null;
+  inp[k].value = v;
+  const name = FIELD_NAMES[k];
+  const last = name.charCodeAt(name.length - 1);
+  const topic = last >= 0xac00 && last <= 0xd7a3 && (last - 0xac00) % 28 ? "은" : "는";   // 받침 있으면 '은'
+  const note = n > hi ? `${name}${topic} 최대 ${hi}까지라 자동으로 맞췄어요 (→ ${v})`
+             : n < lo ? `${name}${topic} 최소 ${lo}부터라 자동으로 맞췄어요 (→ ${v})`
+             : `${name}${topic} 정수만 돼서 자동으로 맞췄어요 (→ ${v})`;
+  hints[k].textContent = note;
+  hints[k].className = "hint warn";
+  inp[k].classList.add("warn");
+  return note;
+}
+for (const k in FIELD_NAMES) {
+  const el = inp[k];
+  const [lo, hi] = NUM_LIMITS[k];
+  el.min = lo; el.max = hi; el.step = 1;
+  const h = document.createElement("span");
+  h.className = "hint";
+  el.closest(".field").appendChild(h);
+  hints[k] = h;
+  el.addEventListener("change", () => { resetHint(k); fixField(k); if (k === "wheel") resetHint("speed"); });
+  el.addEventListener("input", () => { resetHint(k); if (k === "wheel") resetHint("speed"); });
+}
+
+function setChip(id, state, text) {
+  const el = $(id);
+  el.className = "chip " + state;
+  el.lastElementChild.textContent = text;
+}
+function setMsg(text, isErr) {
+  msg.textContent = text;
+  msg.className = "msg" + (isErr ? " err" : "");
+}
+function setSaveMsg(text, kind) {
+  const el = $("saveMsg");
+  el.textContent = text;
+  el.className = "savemsg" + (kind ? " " + kind : "");
+}
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// ===== 저장소: 로봇 여러 대 =====
+let store = { current: "r1", robots: { r1: { ...DEFAULTS } } };
+const cur = () => store.robots[store.current];
+
+function normalize(r) {
+  const out = { ...DEFAULTS, ...r };
+  for (const k in NUM_LIMITS) {
+    const [lo, hi] = NUM_LIMITS[k];
+    let v = Math.round(Number(out[k]));
+    if (!Number.isFinite(v)) v = DEFAULTS[k];
+    out[k] = Math.min(hi, Math.max(lo, v));
+  }
+  for (const k of ["lp", "rp"]) if (!PORTS.includes(out[k])) out[k] = DEFAULTS[k];
+  for (const k of ["ap", "gp"]) if (!PORTS.includes(out[k]) && out[k] !== "-") out[k] = DEFAULTS[k];
+  for (const k of ["linv", "rinv", "ainv", "ginv"]) out[k] = !!out[k];
+  out.name = String(out.name || "로봇").slice(0, 20);
+  return out;
+}
+
+function loadStore() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (saved && saved.robots && Object.keys(saved.robots).length) {
+      store = saved;
+      for (const id in store.robots) store.robots[id] = normalize(store.robots[id]);
+      if (!store.robots[store.current]) store.current = Object.keys(store.robots)[0];
+      return;
+    }
+    // 예전 버전 설정 옮겨오기
+    const old = JSON.parse(localStorage.getItem(OLD_STORE_KEY) || "null");
+    if (old) store.robots.r1 = normalize({ ...old, wheel: DEFAULTS.wheel });
+  } catch (e) { /* 저장값 없으면 기본값 */ }
+}
+function persist() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); return true; }
+  catch (e) { return false; }
+}
+
+// ===== 설정 화면 =====
+function curveLabel(c) {
+  if (c === 0) return "스핀턴 (제자리 회전)";
+  if (c < 100) return "스핀턴과 피벗턴 사이";
+  if (c === 100) return "피벗턴 (안쪽 바퀴 고정)";
+  return "큰 곡선으로 회전";
+}
+
+function fillInputs(r) {
+  for (const k in inp) {
+    if (inp[k].type === "checkbox") inp[k].checked = r[k];
+    else inp[k].value = r[k];
+  }
+  $("curveText").textContent = curveLabel(r.curve);
+  for (const k in hints) resetHint(k);
+}
+function readInputs() {
+  const now = cur();
+  const r = { name: now.name };
+  for (const k in inp) {
+    if (inp[k].type === "checkbox") { r[k] = inp[k].checked; continue; }
+    const v = inp[k].value;
+    // 숫자 칸을 비우거나 숫자가 아닌 걸 넣으면 원래 값 유지
+    if (k in NUM_LIMITS && (String(v).trim() === "" || !Number.isFinite(Number(v)))) r[k] = now[k];
+    else r[k] = v;
+  }
+  return normalize(r);
+}
+function showSummary() {
+  const r = cur();
+  $("spdText").textContent = `직진 ${r.speed} · 회전 ${r.turn}`;
+}
+function showAll() {
+  fillInputs(cur());
+  showSummary();
+}
+
+function portProblem(r) {
+  const used = [r.lp, r.rp, r.ap, r.gp].filter((p) => p !== "-");
+  if (new Set(used).size !== used.length) return "같은 포트를 두 번 골랐어요. 포트를 다르게 해 주세요.";
+  return null;
+}
+
+inp.curve.addEventListener("input", () => {
+  $("curveText").textContent = curveLabel(Number(inp.curve.value));
+});
+document.querySelectorAll("[data-wheel]").forEach((b) => {
+  b.addEventListener("click", () => { inp.wheel.value = b.dataset.wheel; });
+});
+
+$("saveBtn").addEventListener("click", () => {
+  const notes = [];
+  for (const k in FIELD_NAMES) { const n = fixField(k); if (n) notes.push(n); }
+  const r = readInputs();
+  const problem = portProblem(r);
+  if (problem) { setSaveMsg(problem, "err"); return; }
+
+  const structChanged = STRUCT_KEYS.some((k) => r[k] !== cur()[k]);
+  store.robots[store.current] = r;
+  const ok = persist();
+  fillInputs(r);
+  showSummary();
+
+  let text, kind = "ok";
+  if (ch) {
+    if (structChanged) { restartHub(); text = "저장됨 · 로봇 구조가 바뀌어 허브를 다시 시작해요"; }
+    else { sendSettings(); text = "저장됨 · 허브에 적용됨"; }
+    if (!ok) text += " (이 기기에 저장은 실패)";
+  } else {
+    text = ok ? "저장됨 · 허브 연결하면 자동 적용" : "이 기기에 저장 실패";
+    if (!ok) kind = "err";
+  }
+  if (notes.length) { text += " · " + notes.join(" / "); kind = kind === "err" ? "err" : "warn"; }
+  setSaveMsg(text, kind);
+});
+
+$("resetBtn").addEventListener("click", () => {
+  fillInputs({ ...DEFAULTS, name: cur().name });
+  setSaveMsg("기본값을 불러왔어요. 저장을 눌러 적용하세요.");
+});
+
+$("settingsBtn").addEventListener("click", () => {
+  const panel = $("settings");
+  panel.hidden = !panel.hidden;
+  $("settingsBtn").classList.toggle("active", !panel.hidden);
+});
+
+loadStore();
+showAll();
+
+// ===== 지원 여부 확인 =====
+if (!navigator.bluetooth) {
+  setMsg("이 브라우저는 블루투스를 지원하지 않아요. 안드로이드/PC의 크롬으로, https 주소에서 열어 주세요.", true);
+  connectBtn.disabled = true;
+}
+
+// ===== 블루투스 연결 =====
+let device = null;
+let ch = null;
+let ready = false;        // 허브가 명령 받을 준비가 됐는지
+let configSent = false;
+let last = null;
+let waitTimer = null, readyTimer = null;
+let hubErrors = [];       // 이번 시작에서 허브가 알려 준 오류
+let programRunning = null;
+let lowBatteryShown = false;
+let pyService = null;     // Pybricks 블루투스 서비스 (프로그램 넣을 때 필요)
+let hubVer = null;        // 허브 조종 프로그램이 알려 준 버전
+let installing = false;
+
+function setConnectBtn(text, enabled) {
+  connectBtn.textContent = text;
+  connectBtn.disabled = !enabled;
+}
+
+const listened = new WeakMap();   // 허브별로 걸어 둔 알림 함수 (다시 연결할 때 떼고 다시 걸기)
+
+async function connect(opts = {}) {
+  const start = opts.start !== false;   // false면 연결만 하고 프로그램은 안 켬 (프로그램 넣기용)
+  try {
+    if (!device) {
+      const d = await navigator.bluetooth.requestDevice({
+        filters: [{ services: [PYBRICKS_SERVICE] }],
+      });
+      device = d;
+      // 예전에 연결했던 허브가 늦게 끊겼다고 알려 와도 지금 연결은 건드리지 않게
+      d.addEventListener("gattserverdisconnected", () => { if (d === device) onDisconnected(); });
+    }
+    setChip("hubChip", "wait", "연결 중...");
+    setConnectBtn("연결 중...", false);
+
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService(PYBRICKS_SERVICE);
+    pyService = service;
+    ch = await service.getCharacteristic(PYBRICKS_CHAR);
+    programRunning = null;
+
+    // 허브가 보내는 메시지 받기 (준비 완료, 오류, 상태)
+    // 알림 받기: 예전에 걸어 둔 게 있으면 떼고 다시 걸기 (두 번 받지도, 빠뜨리지도 않게)
+    const mine = ch;
+    const old = listened.get(mine);
+    if (old && mine.removeEventListener) mine.removeEventListener("characteristicvaluechanged", old);
+    // 지금 연결된 허브가 보낸 것만 처리 (바꾸기 전 허브가 늦게 보낸 소식은 무시)
+    const handler = (ev) => { if (mine === ch) onNotify(ev); };
+    mine.addEventListener("characteristicvaluechanged", handler);
+    listened.set(mine, handler);
+    try { await ch.startNotifications(); } catch (e) { /* 없어도 동작은 함 */ }
+
+    setChip("hubChip", "ok", device.name || "허브 연결됨");
+    keepScreenOn();
+    if (start) await restartHub();
+    return true;
+  } catch (e) {
+    ch = null;
+    setConnectBtn(device ? reconnectText() : "허브 연결", true);
+    const m = String(e.message || "");
+    if (e.name === "NotFoundError" && /cancel/i.test(m)) {
+      setChip("hubChip", "", "허브 미연결");
+      setMsg("허브 선택이 취소됐어요.");
+    } else if (e.name === "NotFoundError") {
+      setChip("hubChip", "bad", "블루투스 없음");
+      setMsg("블루투스를 찾을 수 없어요. 기기 블루투스가 켜져 있는지 확인해 주세요.", true);
+    } else {
+      setChip("hubChip", "bad", "연결 실패");
+      setMsg("연결 실패: " + m + " (Pybricks Code 탭이 열려 있으면 닫아 주세요)", true);
+    }
+    return false;
+  }
+}
+
+function onDisconnected() {
+  ch = null;
+  if (updatePending) setTimeout(applyUpdate, 300);   // 조종 중 밀려 있던 업데이트 적용
+  ready = false;
+  queue.length = 0;
+  clearTimeout(waitTimer); clearTimeout(readyTimer);
+  setChip("hubChip", "bad", "연결 끊김");
+  setMsg("허브 연결이 끊겼어요. 로봇은 1초 안에 스스로 멈춰요. '다시 연결' 또는 '다른 허브'를 눌러 주세요.", true);
+  setConnectBtn(reconnectText(), true);
+}
+
+function reconnectText() {
+  return device && device.name ? `다시 연결 (${device.name})` : "다시 연결";
+}
+
+// ===== 허브 준비: 조종 프로그램 넣기 =====
+function showHubNotice(kind) {
+  $("hubNoticeText").innerHTML = kind === "missing"
+    ? "<b>허브에 조종 프로그램이 없는 것 같아요.</b> 버튼 한 번으로 넣을 수 있어요."
+    : `<b>허브의 조종 프로그램이 예전 버전이에요.</b> (허브: ${hubVer ? "v" + hubVer : "버전 없음"} → 최신: v${HUB_PROGRAM_VERSION})`;
+  $("hubNotice").hidden = false;
+}
+function setInstallMsg(text, kind) {
+  const el = $("installMsg");
+  el.textContent = text;
+  el.className = "installmsg" + (kind ? " " + kind : "");
+}
+function setInstallProgress(frac) {
+  const bar = $("installProgress");
+  bar.hidden = frac === null;
+  if (frac !== null) bar.firstElementChild.style.width = Math.round(frac * 100) + "%";
+}
+function u32(n) { return [n & 255, (n >>> 8) & 255, (n >>> 16) & 255, (n >>> 24) & 255]; }
+
+// 허브 능력 읽기: [최대 쓰기 크기 2바이트][형식 플래그 4바이트][최대 프로그램 크기 4바이트][(슬롯 수 1바이트)]
+function parseCaps(dv) {
+  if (!dv || dv.byteLength < 10) return null;
+  return { maxWrite: dv.getUint16(0, true), flags: dv.getUint32(2, true), maxProgram: dv.getUint32(6, true) };
+}
+
+async function installHubProgram() {
+  if (installing) return;
+  installing = true;
+  $("installBtn").disabled = true;
+  $("hubNoticeBtn").disabled = true;
+  setInstallProgress(null);
+  try {
+    // 1) 연결 (허브 고르는 창은 버튼을 누른 그때 바로 열어야 해서 가장 먼저)
+    if (!ch) {
+      setInstallMsg("허브를 골라 주세요...");
+      const ok = await connect({ start: false });
+      if (!ok || !ch) throw new Error("허브에 연결하지 못했어요. 허브 전원을 켜고 다시 눌러 주세요.");
+    }
+
+    // 2) 조종 멈추고 지금 프로그램 끄기
+    ready = false; configSent = false; last = null; queue.length = 0;
+    clearTimeout(waitTimer); clearTimeout(readyTimer);
+    setConnectBtn("프로그램 넣는 중...", false);
+    $("hubNotice").hidden = true;
+    setInstallMsg("허브 확인 중...");
+    try { await gattWrite(new Uint8Array([CMD_WRITE_STDIN, 0x53])); } catch (e) {}
+    try { await gattWrite(new Uint8Array([CMD_STOP_PROGRAM])); } catch (e) {}
+    await sleep(300);
+
+    // 3) 허브가 받아 줄 수 있는지 확인
+    let caps = null;
+    try {
+      const capCh = await pyService.getCharacteristic(PYBRICKS_CAPS);
+      caps = parseCaps(await capCh.readValue());
+    } catch (e) { caps = null; }
+    if (!caps || !(caps.flags & (CAP_MPY6 | CAP_MPY6_1 | CAP_MPY6_3))) {
+      throw new Error("이 허브의 Pybricks 펌웨어가 너무 예전 버전이에요. 1단계로 최신 펌웨어를 설치한 뒤 다시 해 주세요.");
+    }
+
+    // 4) 프로그램 파일 읽기 (앱과 같이 저장돼 있어서 인터넷 없어도 됨)
+    setInstallMsg("조종 프로그램 준비 중...");
+    const res = await fetch("hub_program.bin?v=" + HUB_PROGRAM_VERSION, { cache: "no-store" });
+    if (!res.ok) throw new Error("조종 프로그램 파일을 못 찾았어요. 인터넷에 연결해서 앱을 한 번 새로 열어 주세요.");
+    const program = new Uint8Array(await res.arrayBuffer());
+    if (program.length < 8 || program.length > caps.maxProgram) {
+      throw new Error(`조종 프로그램 크기가 맞지 않아요 (${program.length}바이트, 허브 최대 ${caps.maxProgram}바이트).`);
+    }
+
+    // 5) 보내기: 크기 0 알리기 → 조각조각 쓰기 → 진짜 크기 알리기 (중간에 끊겨도 망가진 프로그램이 실행되지 않게)
+    const payload = Math.max(1, caps.maxWrite - 5);
+    setInstallProgress(0);
+    await gattWrite(new Uint8Array([CMD_WRITE_PROGRAM_META, ...u32(0)]));
+    for (let off = 0; off < program.length; off += payload) {
+      const part = program.subarray(off, off + payload);
+      const pkt = new Uint8Array(5 + part.length);
+      pkt[0] = CMD_WRITE_USER_RAM;
+      pkt.set(u32(off), 1);
+      pkt.set(part, 5);
+      await gattWrite(pkt);
+      const done = Math.min(1, (off + part.length) / program.length);
+      setInstallProgress(done);
+      setInstallMsg(`허브에 넣는 중... ${Math.round(done * 100)}%`);
+    }
+    await gattWrite(new Uint8Array([CMD_WRITE_PROGRAM_META, ...u32(program.length)]));
+    setInstallProgress(1);
+    setInstallMsg(`넣기 완료! 조종 프로그램 v${HUB_PROGRAM_VERSION}을 시작해요.`, "ok");
+
+    // 6) 새 프로그램 시작 → 평소처럼 조종
+    await restartHub();
+    setInstallMsg(`완료! 이 허브에 조종 프로그램 v${HUB_PROGRAM_VERSION}이 들어갔어요. 바로 조종할 수 있어요.`, "ok");
+  } catch (e) {
+    const m = String((e && e.message) || e);
+    const friendly = /GATT|disconnect|NetworkError|연결 안 됨/i.test(m)
+      ? "넣다가 연결이 끊겼어요. 허브를 가까이 두고 다시 눌러 주세요. (처음부터 다시 넣으면 돼요)"
+      : m;
+    setInstallMsg(friendly, "err");
+    setInstallProgress(null);
+    if (ch) setConnectBtn("다시 시작", true);
+  } finally {
+    installing = false;
+    $("installBtn").disabled = false;
+    $("hubNoticeBtn").disabled = false;
+  }
+}
+
+$("installBtn").addEventListener("click", installHubProgram);
+$("hubNoticeBtn").addEventListener("click", () => {
+  $("setup").hidden = false;
+  $("setupBtn").classList.add("active");
+  installHubProgram();
+});
+$("setupBtn").addEventListener("click", () => {
+  const panel = $("setup");
+  panel.hidden = !panel.hidden;
+  $("setupBtn").classList.toggle("active", !panel.hidden);
+});
+
+// ===== 다른 허브로 바꾸기 =====
+// 지금 허브와 연결을 끊고, 허브 고르는 창을 다시 띄움
+$("switchBtn").addEventListener("click", () => {
+  if (installing) return;  // 프로그램 넣는 중엔 바꾸지 않음
+  const old = device, oldCh = ch;
+  device = null;          // 이 순간부터 예전 허브 소식은 무시
+  ch = null;
+  pyService = null;
+  hubVer = null;
+  $("hubNotice").hidden = true;
+  ready = false;
+  queue.length = 0;
+  clearTimeout(waitTimer); clearTimeout(readyTimer);
+  if (old) {
+    // 예전 허브: 로봇 정지 → 프로그램 끄기 → 연결 끊기 (뒤에서 처리)
+    const w = (b) => oldCh && (oldCh.writeValueWithResponse ? oldCh.writeValueWithResponse(b) : oldCh.writeValue(b));
+    Promise.resolve()
+      .then(() => w(new Uint8Array([CMD_WRITE_STDIN, 0x53])))   // 'S'
+      .then(() => w(new Uint8Array([CMD_STOP_PROGRAM])))
+      .catch(() => {})
+      .finally(() => { try { old.gatt.disconnect(); } catch (e) {} });
+  }
+  setChip("hubChip", "", "허브 미연결");
+  setConnectBtn("허브 연결", true);
+  connect();              // 허브 고르는 창은 버튼을 누른 바로 그때 열어야 해서 기다리지 않고 바로 호출
+});
+
+// 버튼 하나로: 연결 안 됨 → 연결 / 연결됐는데 프로그램 멈춤 → 다시 시작
+connectBtn.addEventListener("click", () => {
+  if (installing) return;
+  if (ch) restartHub();
+  else connect();
+});
+
+// 블루투스 쓰기는 한 번에 하나씩만 → 줄 세워서 차례로
+let chain = Promise.resolve();
+function gattWrite(bytes) {
+  const p = chain.then(() => {
+    if (!ch) throw new Error("연결 안 됨");
+    return ch.writeValueWithResponse ? ch.writeValueWithResponse(bytes) : ch.writeValue(bytes);
+  });
+  chain = p.catch(() => {});
+  return p;
+}
+
+// 허브 프로그램 다시 시작 → 허브가 "WAIT"을 보내면 로봇 구조·설정 전송 → "READY" 오면 조종 시작
+async function restartHub() {
+  ready = false;
+  configSent = false;
+  last = null;
+  hubErrors = [];
+  hubVer = null;
+  queue.length = 0;
+  clearTimeout(waitTimer); clearTimeout(readyTimer);
+  setConnectBtn("시작 중...", false);
+  setMsg("허브 프로그램 시작 중...");
+
+  try { await gattWrite(new Uint8Array([CMD_STOP_PROGRAM])); } catch (e) {}
+  await sleep(400);
+  // 시작 명령: 블루투스가 잠깐 불안정해서 실패하면 두 번 더 시도 (이미 실행 중이라는 응답이면 그만)
+  for (let i = 0; i < 3; i++) {
+    try { await gattWrite(new Uint8Array([CMD_START_PROGRAM])); break; }
+    catch (e) {
+      if (!ch || /already|busy/i.test(String(e && e.message))) break;
+      await sleep(300);
+    }
+  }
+
+  // 허브 응답(WAIT)이 없으면 2초 뒤 그냥 보냄 (알림이 안 되는 기기 대비)
+  waitTimer = setTimeout(sendConfigOnce, 2000);
+  // READY가 끝내 안 오면 6초 뒤 조종은 허용 (예전 허브 코드 대비)
+  readyTimer = setTimeout(() => {
+    if (!ready && ch) {
+      markReady();
+      setMsg("허브가 응답하지 않아요. 허브에 조종 프로그램이 없거나 다른 프로그램이 들어 있을 수 있어요.", true);
+      showHubNotice("missing");
+    }
+  }, 6000);
+}
+
+function markReady() {
+  ready = true;
+  clearTimeout(readyTimer);
+  setConnectBtn("연결됨", false);
+}
+
+// ===== 허브가 보내는 메시지 =====
+const decoder = new TextDecoder();
+let outBuf = "";
+function onNotify(e) {
+  const dv = e.target.value;
+  const v = new Uint8Array(dv.buffer, dv.byteOffset, dv.byteLength);
+  if (v[0] === EVENT_STATUS && v.length >= 5) {
+    handleStatus(v[1] | (v[2] << 8) | (v[3] << 16) | (v[4] << 24));
+    return;
+  }
+  if (v[0] !== EVENT_STDOUT) return;
+  outBuf += decoder.decode(v.slice(1), { stream: true });
+  let i;
+  while ((i = outBuf.indexOf("\n")) >= 0) {
+    const line = outBuf.slice(0, i).trim();
+    outBuf = outBuf.slice(i + 1);
+    if (line) handleHubLine(line);
+  }
+  if (outBuf.length > 500) outBuf = "";   // 줄바꿈 없는 이상한 출력 방지
+}
+
+function handleHubLine(line) {
+  if (line === "WAIT") {
+    // 허브가 구조 정보를 기다리는 중 → 항상 (다시) 보냄
+    configSent = true;
+    clearTimeout(waitTimer);
+    sendConfig();
+    sendSettings();
+  } else if (line.startsWith("VER ")) {
+    hubVer = parseInt(line.slice(4), 10) || 0;
+  } else if (line === "READY") {
+    markReady();
+    if (hubVer === null || hubVer < HUB_PROGRAM_VERSION) showHubNotice("old");
+    else $("hubNotice").hidden = true;
+    if (hubErrors.length) setMsg("준비 완료, 하지만 확인 필요: " + hubErrors.join(" / "), true);
+    else setMsg("준비 완료! 조종하세요.");
+  } else if (line.startsWith("ERR")) {
+    const text = line.slice(3).trim();
+    if (!ready) hubErrors.push(text);
+    setMsg(text, true);
+  } else {
+    console.log("허브:", line);
+  }
+}
+
+function handleStatus(flags) {
+  const running = !!(flags & FLAG_PROGRAM_RUNNING);
+  // 조종 중이었는데 프로그램이 꺼짐 (허브 버튼, 오류, 배터리 등)
+  if (ready && programRunning === true && !running) {
+    ready = false;
+    setMsg("허브 프로그램이 멈췄어요 (허브 버튼을 눌렀거나 오류). '다시 시작'을 눌러 주세요.", true);
+    setConnectBtn("다시 시작", true);
+  }
+  programRunning = running;
+
+  const low = !!(flags & FLAG_LOW_BATTERY);
+  if (low && !lowBatteryShown) {
+    lowBatteryShown = true;
+    setChip("hubChip", "wait", (device && device.name ? device.name + " · " : "") + "배터리 부족");
+  } else if (!low && lowBatteryShown) {
+    lowBatteryShown = false;
+    setChip("hubChip", "ok", (device && device.name) || "허브 연결됨");
+  }
+}
+
+// ===== 전송 =====
+// 조종 명령은 가장 최근 것만, 설정 줄은 빠짐없이 보냄
+const queue = [];
+let busy = false;
+
+function send(cmd) {
+  for (let i = queue.length - 1; i >= 0; i--) if (queue[i].kind === "cmd") queue.splice(i, 1);
+  queue.push({ kind: "cmd", data: cmd });
+  if (!busy) flush();
+}
+function sendLine(line) {
+  queue.push({ kind: "line", data: line, tries: 0 });
+  if (!busy) flush();
+}
+
+// 로봇 구조:  C왼오팔집,지름,간격,방향  예) Cefad,88,112,1
+// (포트는 소문자, 없음은 x. 대문자를 쓰면 조종 명령과 헷갈려서)
+function sendConfig() {
+  const r = cur();
+  const port = (p) => (p === "-" ? "x" : p.toLowerCase());
+  const flags = (r.linv ? 1 : 0) | (r.rinv ? 2 : 0) | (r.ainv ? 4 : 0) | (r.ginv ? 8 : 0);
+  sendLine(`C${port(r.lp)}${port(r.rp)}${port(r.ap)}${port(r.gp)},${r.wheel},${r.axle},${flags}\n`);
+}
+// 조종 설정:  P직진,회전,회전방식,팔,집게,대각선  예) P200,120,0,300,300,60
+function sendSettings() {
+  const r = cur();
+  sendLine(`P${r.speed},${r.turn},${r.curve},${r.arm},${r.grip},${r.diag}\n`);
+}
+function sendConfigOnce() {
+  if (configSent || !ch) return;
+  configSent = true;
+  sendConfig();
+  sendSettings();
+}
+
+async function flush() {
+  busy = true;
+  while (queue.length && ch) {
+    const item = queue.shift();
+    const bytes = new TextEncoder().encode(item.data);
+    try {
+      // 한 번에 보낼 수 있는 크기가 작아서 19바이트씩 나눠 보냄
+      for (let i = 0; i < bytes.length; i += 19) {
+        const chunk = bytes.slice(i, i + 19);
+        const pkt = new Uint8Array(chunk.length + 1);
+        pkt[0] = CMD_WRITE_STDIN;
+        pkt.set(chunk, 1);
+        await gattWrite(pkt);
+      }
+    } catch (e) {
+      console.warn("전송 실패", e);
+      if (item.kind === "cmd") {
+        // 조종 명령 실패 → 다음 화면 갱신 때 현재 버튼 상태를 다시 보냄 (정지 명령이 묻히지 않게)
+        last = null;
+      } else if (item.tries < 2 && ch) {
+        item.tries++;
+        queue.unshift(item);          // 설정 줄은 두 번까지 다시 시도
+        await sleep(50);
+      }
+    }
+  }
+  busy = false;
+}
+
+// 연결 유지 신호: 보낼 게 없을 때만 "." 한 글자 (설정 줄 사이에 끼어들지 않게)
+setInterval(() => {
+  if (ch && ready && !busy && queue.length === 0) {
+    gattWrite(new Uint8Array([CMD_WRITE_STDIN, 0x2e])).catch(() => {});
+  }
+}, KEEPALIVE_MS);
+
+// ===== L1 / R1: 직진 속도 조절 =====
+function bumpSpeed(dir) {
+  const r = cur();
+  const [lo, hi] = NUM_LIMITS.speed;
+  r.speed = Math.min(hi, Math.max(lo, r.speed + dir * SPEED_STEP));
+  persist();
+  inp.speed.value = r.speed;
+  showSummary();
+  if (ch && ready) sendSettings();
+  setMsg(`직진 속도 ${r.speed} mm/s`);
+}
+
+// ===== 화면 터치 버튼 =====
+const touchHeld = new Set();
+Object.entries(btnEls).forEach(([name, el]) => {
+  const down = (e) => { e.preventDefault(); touchHeld.add(name); el.setPointerCapture?.(e.pointerId); };
+  const up = () => touchHeld.delete(name);
+  el.addEventListener("pointerdown", down);
+  el.addEventListener("pointerup", up);
+  el.addEventListener("pointercancel", up);
+  el.addEventListener("lostpointercapture", up);
+});
+
+// ===== 메인 루프 =====
+function getPad() {
+  const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+  for (const p of pads) if (p && p.connected) return p;
+  return null;
+}
+
+// 컨트롤러가 연결돼 있으면, 컨트롤러 버튼이 키보드처럼 화면을 건드리지 않게 막음
+// (안드로이드에선 방향키가 숫자칸 값을 바꾸고, ✕가 포커스된 버튼을 누를 수 있음)
+window.addEventListener("keydown", (e) => {
+  if (!getPad()) return;
+  const t = e.target;
+  const tag = t && t.tagName;
+  const typing = tag === "INPUT" && /^[0-9]$|^Backspace$|^Delete$|^Tab$/.test(e.key);
+  if (typing) return;   // 숫자 직접 입력은 허용
+  if (/^Arrow/.test(e.key) || ((e.key === "Enter" || e.key === " ") && tag !== "INPUT")) {
+    e.preventDefault();
+    // 숫자 칸은 값만 안 바뀌게 하고 커서는 그대로 (키보드로 이어서 입력할 수 있게)
+    if (tag !== "INPUT" && t && t.blur && t !== document.body) t.blur();
+  }
+}, true);
+
+function releaseFocus() {
+  const a = document.activeElement;
+  if (a && a !== document.body && /^(INPUT|SELECT|BUTTON|TEXTAREA)$/.test(a.tagName)) a.blur();
+}
+
+let padShown = null;
+let prevL1 = false, prevR1 = false;
+
+function loop() {
+  const pad = getPad();
+
+  const padName = pad ? pad.id + "|" + pad.mapping : null;
+  if (padName !== padShown) {
+    padShown = padName;
+    if (!pad) setChip("padChip", "", "컨트롤러 없음");
+    else if (pad.mapping !== "standard") {
+      setChip("padChip", "wait", "컨트롤러 연결됨 (비표준 배치)");
+      setMsg("이 컨트롤러는 버튼 배치가 표준이 아니라서 일부 버튼이 다르게 동작할 수 있어요.", true);
+    } else setChip("padChip", "ok", "컨트롤러 연결됨");
+  }
+
+  const pressed = (name) => {
+    if (touchHeld.has(name)) return true;
+    const b = pad && pad.buttons[BTN[name]];
+    return !!(b && b.pressed);
+  };
+
+  for (const name in btnEls) btnEls[name].classList.toggle("on", pressed(name));
+
+  // 컨트롤러를 쓰기 시작하면 입력칸·버튼에 남은 커서를 뺌
+  if (pad && pad.buttons.some((b) => b && b.pressed)) releaseFocus();
+
+  // L1/R1: 눌린 순간에만 한 번
+  const l1 = pressed("l1"), r1 = pressed("r1");
+  if (l1 && !prevL1) bumpSpeed(-1);
+  if (r1 && !prevR1) bumpSpeed(+1);
+  prevL1 = l1; prevR1 = r1;
+
+  let cmd = "S";
+  if (!document.hidden) {   // 화면이 안 보일 땐 무조건 정지
+    const d = dpadCommand(pressed("up"), pressed("down"), pressed("left"), pressed("right"));
+    if (d) cmd = d;
+    else {
+      for (const [name, c] of ORDER) {
+        if (pressed(name)) { cmd = c; break; }
+      }
+    }
+  }
+  $("cmdText").textContent = LABEL[cmd];
+  $("cmdKey").textContent = cmd;
+
+  if (ch && ready && cmd !== last) {
+    last = cmd;
+    send(cmd);
+  }
+
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+
+// ===== 내 로봇 찾기 =====
+$("findBtn").addEventListener("click", () => {
+  if (!ch || !ready) return;
+  last = "S";
+  send("I");
+  setMsg(`'${device && device.name ? device.name : "허브"}'가 삐삐 울리고 초록 불이 깜빡이면 내 로봇이에요.`);
+});
+setInterval(() => {
+  $("findBtn").disabled = !(ch && ready);
+  $("switchBtn").hidden = !device;   // 한 번이라도 허브를 골랐으면 '다른 허브' 버튼 보이기
+}, 300);
+
+// ===== 학생 실수 방지 =====
+// 안드로이드: 컨트롤러 ○ 버튼이나 뒤로 가기 제스처가 "뒤로 가기"로 처리돼 앱이 닫히는 것 막기
+try {
+  history.pushState({ stay: 1 }, "");
+  window.addEventListener("popstate", () => {
+    history.pushState({ stay: 1 }, "");
+    if (ch && ready) { last = "S"; send("S"); }
+    setMsg("앱을 닫으려면 홈 버튼을 눌러 주세요. (뒤로 가기는 막아 뒀어요)");
+  });
+} catch (e) { /* 지원 안 하면 무시 */ }
+// 화면을 길게 누를 때 뜨는 메뉴·글자 선택 막기
+document.addEventListener("contextmenu", (e) => {
+  if (!(e.target && /^(INPUT|SELECT)$/.test(e.target.tagName))) e.preventDefault();
+});
+// 실수로 창을 닫거나 새로고침할 때 (노트북) 조종 중이면 한 번 물어봄
+window.addEventListener("beforeunload", (e) => {
+  if (ch && ready) { e.preventDefault(); e.returnValue = ""; }
+});
+
+// ===== 안전장치 =====
+$("stopBtn").addEventListener("click", () => { last = "S"; if (ch && ready) send("S"); });
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden && ch && ready) { last = "S"; send("S"); }
+});
+window.addEventListener("gamepadconnected", () => setMsg("컨트롤러가 연결됐어요."));
+window.addEventListener("gamepaddisconnected", () => setMsg("컨트롤러 연결이 끊겼어요. 로봇은 정지합니다.", true));
+
+// 조종 중 화면 꺼짐 방지
+let wakeLock = null;
+async function keepScreenOn() {
+  try {
+    if ("wakeLock" in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request("screen");
+      wakeLock.addEventListener("release", () => { wakeLock = null; });
+    }
+  } catch (e) { /* 지원 안 하면 무시 */ }
+}
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && ch) keepScreenOn();
+});
+
+// ===== 오프라인 사용 (PWA) =====
+if ("serviceWorker" in navigator) {
+  // updateViaCache: "none" = 새 버전 확인할 때 캐시 무시
+  let swReg = null;
+  navigator.serviceWorker.register("sw.js", { updateViaCache: "none" })
+    .then((r) => { swReg = r; }).catch(() => {});
+
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (hadController && !reloading) applyUpdate();   // 첫 설치 때는 새로고침 안 함
+  });
+}
+
+// ===== 새 버전 확인 =====
+// - 연결 안 됐을 때: 새 버전이 있으면 바로 바뀜
+// - 허브와 연결 중일 때: 화면 맨 위에 "새 버전이 있어요 [지금 업데이트]" 띠를 띄움
+// - "지금 업데이트": 앱이 저장해 둔 예전 파일을 스스로 지우고 최신으로 다시 염
+//   (크롬 설정에서 '데이터 삭제' 하던 걸 대신함. ⚙ 설정값과 테마는 그대로 남음)
+let reloading = false;
+let updatePending = false;
+let newVersion = null;
+
+function showUpdateBar(v) {
+  newVersion = v || newVersion;
+  $("updateText").textContent = newVersion
+    ? `새 버전(${newVersion})이 있어요` : "새 버전이 있어요";
+  $("updateBar").hidden = false;
+}
+
+// 저장해 둔 앱 파일·서비스 워커를 지우고 서버에서 새로 열기
+async function forceUpdate() {
+  if (reloading) return;
+  reloading = true;
+  $("updateNow").disabled = true;
+  $("updateText").textContent = "최신 버전 받는 중...";
+  $("updateBar").hidden = false;
+
+  // 지우기 전에 서버에 접속되는지 먼저 확인 (안 되면 예전 파일을 지우지 않음 → 오프라인에서도 계속 열림)
+  try {
+    const probe = new URL("index.html", location.href);
+    probe.searchParams.set("t", Date.now());
+    const res = await Promise.race([
+      fetch(probe.href, { cache: "no-store" }),
+      new Promise((_, no) => setTimeout(() => no(new Error("느림")), 8000)),
+    ]);
+    if (!res.ok) throw new Error("서버 응답 이상");
+    // 오프라인 기능이 대신 돌려준 저장본이면 서버 접속 실패로 봄
+    if (res.headers.get("X-Robot-Pad-Cache")) throw new Error("저장본");
+    // 받은 화면이 지금과 같은 버전이면 아직 새 버전을 못 받은 것 (예전 오프라인 기능이 저장본을 준 경우 포함)
+    const m = (await res.text()).match(/APP_VERSION\s*=\s*"([^"]+)"/);
+    if (!m || m[1] === APP_VERSION) throw new Error("새 버전 아님");
+  } catch (e) {
+    reloading = false;
+    $("updateNow").disabled = false;
+    $("updateText").textContent = "인터넷이 안 돼서 업데이트하지 못했어요. 인터넷 연결 후 다시 눌러 주세요.";
+    return;
+  }
+
+  try {
+    if (ch) {   // 허브 연결 중이면 로봇 멈추고 연결 정리
+      last = "S";
+      try { await gattWrite(new Uint8Array([CMD_WRITE_STDIN, 0x53])); } catch (e) {}
+      const d = device;
+      ch = null; ready = false;   // '페이지를 나가시겠어요?' 창이 안 뜨게
+      try { d && d.gatt.disconnect(); } catch (e) {}
+    }
+    if (navigator.serviceWorker && navigator.serviceWorker.getRegistrations) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map((r) => r.unregister()));
+    }
+    if (window.caches) {
+      const keys = await caches.keys();
+      await Promise.all(keys.filter((k) => k.startsWith("robot-pad")).map((k) => caches.delete(k)));
+    }
+  } catch (e) { /* 지우다 실패해도 새로 열기는 함 */ }
+  const url = new URL(location.href);
+  url.searchParams.set("v", Date.now());   // 브라우저·GitHub 캐시 모두 건너뜀
+  location.replace(url.href);
+}
+
+function applyUpdate(v) {
+  if (reloading) return;
+  if (ch) {   // 조종 중엔 갑자기 바꾸지 않고 띠로 알려 줌
+    updatePending = true;
+    showUpdateBar(v);
+    return;
+  }
+  // 인터넷이 느려 계속 새로고침되는 일이 없게, 자동은 1분에 한 번만 (넘으면 띠로 알림)
+  let lastTry = 0;
+  try { lastTry = Number(sessionStorage.getItem("robot-pad-reload")) || 0; } catch (e) {}
+  if (Date.now() - lastTry < 60000) { showUpdateBar(v); return; }
+  try { sessionStorage.setItem("robot-pad-reload", String(Date.now())); } catch (e) {}
+  forceUpdate();
+}
+
+// 서버의 버전 숫자 확인. 결과: "new" / "same" / "offline"
+async function checkForUpdate() {
+  if (reloading) return "same";
+  if (!navigator.onLine) return "offline";
+  let result = "offline";
+  try {
+    const url = new URL("index.html", location.href);
+    url.searchParams.set("t", Date.now());   // GitHub 10분 캐시 건너뜀
+    const res = await fetch(url.href, { cache: "no-store" });
+    if (res.headers.get("X-Robot-Pad-Cache")) {
+      result = "offline";   // 서버 말고 저장본이 왔음 = 인터넷 안 됨
+    } else if (res.ok) {
+      // 서버 화면 안의 버전 숫자 읽기 ("전체 바꾸기"로 버전을 고쳐도 안 깨지게 이 줄엔 같은 글자를 안 씀)
+      const m = (await res.text()).match(/APP_VERSION\s*=\s*"([^"]+)"/);
+      if (m && m[1] !== APP_VERSION) { result = "new"; applyUpdate(m[1]); }
+      else result = "same";
+    }
+  } catch (e) { /* 인터넷 없음 → 다음에 */ }
+  try {
+    const reg = await navigator.serviceWorker?.getRegistration?.();
+    if (reg) reg.update().catch(() => {});   // 인터넷 없으면 조용히 다음에
+  } catch (e) {}
+  return result;
+}
+
+$("updateNow").addEventListener("click", forceUpdate);
+$("verBtn").addEventListener("click", async () => {
+  $("verBtn").disabled = true;
+  $("verBtn").textContent = "확인 중...";
+  const r = await checkForUpdate();
+  $("verBtn").disabled = false;
+  $("verBtn").textContent = "업데이트 확인";
+  if (r === "same") setMsg(`지금 최신 버전(${APP_VERSION})이에요.`);
+  else if (r === "offline") setMsg("인터넷이 안 돼서 확인하지 못했어요.", true);
+  else if (r === "new" && !reloading) showUpdateBar();
+});
+
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden) checkForUpdate();
+});
+setTimeout(checkForUpdate, 2000);
+setInterval(checkForUpdate, 60 * 1000);   // 1분마다 (연결 중이면 띠만 띄움)
 </script>
 </body>
 </html>
