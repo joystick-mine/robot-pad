@@ -163,6 +163,21 @@
     font-weight: 700; font-size: 15px; text-decoration: none;
     padding: 11px 16px; border-radius: 12px; background: var(--accent); color: var(--accentText);
   }
+  .stepcard .tag {
+    font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--muted);
+  }
+  .fwname { display: grid; gap: 6px; font-size: 14px; font-weight: 600; }
+  .fwname small { font-weight: 400; color: var(--muted); font-size: 12px; }
+  .fwname input {
+    font: inherit; font-size: 16px; padding: 9px 12px; border-radius: 10px; width: 100%; max-width: 260px;
+    background: var(--card); color: var(--text); border: 1px solid var(--line);
+  }
+  .fwname input.bad { border-color: var(--bad); }
+  .fwname small.bad { color: var(--bad); }
+  .stepcard ul.tips { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 6px; }
+  .stepcard details ol { margin-top: 6px; }
+  .stepcard details li { color: var(--muted); }
   .progress { height: 10px; border-radius: 999px; background: var(--line); overflow: hidden; }
   .progress[hidden] { display: none; }
   .progress > div { height: 100%; width: 0%; background: var(--ok); transition: width .15s; }
@@ -274,7 +289,8 @@
 
   .now { text-align: center; }
   .now .label { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .now .cmd { font-size: 28px; font-weight: 800; margin-top: 4px; min-width: 150px; }
+  .now .cmd { font-size: 28px; font-weight: 800; margin-top: 4px; min-width: 150px; max-width: 280px; line-height: 1.25; word-break: keep-all; }
+  .now .cmd.long { font-size: 18px; }
   .now .key {
     display: inline-block; margin-top: 6px; font-family: ui-monospace, monospace;
     font-size: 13px; color: var(--muted); border: 1px solid var(--line);
@@ -345,24 +361,59 @@
   <h2>허브 준비 <span style="font-weight:400;font-size:13px;color:var(--muted)">· 허브마다 처음 한 번만 하면 돼요</span></h2>
   <p>레고 허브로 이 조종기를 쓰려면 두 가지가 필요해요. ① 허브의 운영체제를 <b>Pybricks</b>로 바꾸기, ② 허브에 <b>조종 프로그램</b> 넣기.</p>
   <div class="steps">
-    <article class="stepcard">
-      <h3><span class="num">1</span>Pybricks 펌웨어 설치</h3>
-      <p><b>이미 했다면 건너뛰세요.</b> 위의 '허브 연결'을 눌렀을 때 목록에 허브가 보이면 이미 Pybricks예요.</p>
+    <article class="stepcard" id="fwCard">
+      <h3><span class="num">1</span>Pybricks 펌웨어 설치 <span class="tag">USB 선</span></h3>
+      <p><b>이미 했다면 건너뛰세요.</b> 위의 '허브 연결'을 눌렀을 때 목록에 허브가 보이면 이미 Pybricks예요. 펌웨어를 새 버전으로 바꿀 때도 여기서 하면 돼요.</p>
       <details>
         <summary>펌웨어가 뭐예요?</summary>
         <p>허브 안에서 도는 운영체제예요. 처음 산 SPIKE 허브에는 레고 펌웨어가 들어 있어서 SPIKE 앱으로만 연결돼요. Pybricks 펌웨어로 바꾸면 허브가 파이썬을 실행하고, 이 조종기와 블루투스로 대화할 수 있게 돼요. 언제든 레고 펌웨어로 되돌릴 수 있어요.</p>
       </details>
+      <label class="fwname">
+        <span>허브 이름 <small>연결할 때 이 이름이 보여요 · 비워 두면 기본 이름</small></span>
+        <input id="fwName" type="text" maxlength="15" placeholder="예: 1조" autocomplete="off" spellcheck="false">
+        <small id="fwNameHint" class="muted">한글 5자, 영어·숫자 15자까지</small>
+      </label>
       <ol>
-        <li><b>컴퓨터의 크롬</b>과 <b>허브 USB 선</b>을 준비해요. (태블릿보다 컴퓨터가 확실해요)</li>
-        <li>아래 버튼으로 Pybricks 공식 설치 화면을 열어요.</li>
-        <li>오른쪽 위 메뉴에서 <b>Install Pybricks Firmware</b>(펌웨어 설치)를 눌러요.</li>
-        <li>허브 종류에서 <b>SPIKE Prime</b>을 고르고, 라이선스에 동의해요.</li>
-        <li>허브 이름을 정해요. 예: <b>1조</b>. 연결할 때 이 이름이 보여요.</li>
-        <li>화면에 나오는 영상대로 USB 선을 연결하고 허브 버튼을 누르면 설치가 시작돼요.</li>
-        <li>다 끝나면 그 <b>탭을 닫고</b> 2단계로 와요.</li>
+        <li>허브 <b>전원을 끄고</b> USB 선을 빼요. 배터리는 충전된 상태가 좋아요.</li>
+        <li>허브의 <b>블루투스 버튼</b>(블루투스 모양이 그려진 작은 버튼)을 <b>누른 채로</b> USB 선을 꽂아요.</li>
+        <li>블루투스 불빛이 <b>분홍 → 초록 → 파랑</b>으로 깜빡이면 버튼에서 손을 떼요. (업데이트 모드)</li>
+        <li>아래 <b>USB로 펌웨어 설치</b>를 누르고, 목록에서 <b>LEGO Technic Large Hub in DFU Mode</b>를 골라 <b>연결</b>을 눌러요.</li>
+        <li>진행 막대가 끝나면 허브가 저절로 다시 켜져요. 선을 빼고 2단계로 가요.</li>
       </ol>
-      <a class="linkbtn" href="https://code.pybricks.com" target="_blank" rel="noopener">Pybricks 설치 화면 열기 ↗</a>
-      <p class="muted">설치 화면은 인터넷이 필요해요. 윈도우에서는 처음 한 번 드라이버 설치 안내가 나올 수 있어요. 레고 펌웨어로 되돌리려면 같은 메뉴의 <b>Restore official LEGO firmware</b>를 쓰면 돼요.</p>
+      <button id="fwBtn" type="button" class="primary">USB로 펌웨어 설치</button>
+      <div id="fwProgress" class="progress" hidden><div></div></div>
+      <div id="fwMsg" class="installmsg"></div>
+      <details id="fwWin">
+        <summary>윈도우: 목록에 허브가 안 보이거나 '접근 거부'가 떠요</summary>
+        <p>윈도우는 처음 한 번 <b>USB 드라이버</b>를 골라 줘야 해요. 허브를 업데이트 모드로 켜 둔 채로 따라 하세요. (컴퓨터마다 한 번만)</p>
+        <ol>
+          <li><b>시작 단추</b>를 오른쪽 클릭 → <b>장치 관리자</b>.</li>
+          <li><b>기타 장치</b>에서 <b>LEGO Technic Large Hub in DFU Mode</b>를 찾아요. 느낌표가 있으면 오른쪽 클릭 → <b>속성</b>. (느낌표 없이 다른 곳에 있으면 이미 설치된 거예요)</li>
+          <li><b>드라이버 업데이트</b> → <b>내 컴퓨터에서 드라이버 찾아보기</b>.</li>
+          <li><b>컴퓨터의 사용 가능한 드라이버 목록에서 직접 선택</b>.</li>
+          <li><b>범용 직렬 버스 장치</b>(Universal Serial Bus devices) → <b>다음</b>.</li>
+          <li>제조업체와 모델 둘 다 <b>WinUsb 장치</b>(WinUsb Device) → <b>다음</b>.</li>
+          <li>'권장하지 않음' 경고가 나오면 <b>예</b>. 이 허브에 맞는 드라이버예요.</li>
+          <li><b>닫기</b>를 누르고, 여기로 돌아와 다시 <b>USB로 펌웨어 설치</b>.</li>
+        </ol>
+        <p>아예 목록에 없으면 허브가 업데이트 모드가 아닌 거예요. 위 1~3번을 다시 해 보세요.</p>
+      </details>
+      <details>
+        <summary>잘 안 될 때</summary>
+        <ul class="tips">
+          <li><b>중간에 선이 빠졌어요</b> → 허브는 망가지지 않아요. 다시 버튼을 누른 채 선을 꽂아 업데이트 모드로 켜고 처음부터 하면 돼요.</li>
+          <li><b>목록이 비어 있어요</b> → 불빛이 여러 색으로 깜빡이는지 보세요. 그냥 켜진 상태면 업데이트 모드가 아니에요. 다른 USB 선(충전 전용 선 말고 데이터 선)도 써 보세요.</li>
+          <li><b>Pybricks Code 탭이 열려 있어요</b> → 그 탭이 USB를 잡고 있을 수 있어요. 닫고 다시 해요.</li>
+          <li><b>태블릿</b> → OTG로 꽂으면 되는 기기도 있지만, 컴퓨터 크롬이 가장 확실해요. 아이패드는 USB 설치가 안 돼요.</li>
+          <li><b>처음 설치하는 허브</b>(레고 펌웨어가 든 허브)는 Pybricks 공식 저장소에서 부트로더 조각(32KB)을 받아요. 이 앱을 인터넷에서 한 번 열어 두면 그다음엔 인터넷 없이도 돼요.</li>
+        </ul>
+      </details>
+      <details>
+        <summary>레고 펌웨어로 되돌리기 · 공식 사이트에서 설치하기</summary>
+        <p>레고 SPIKE 앱으로 되돌리려면 Pybricks 공식 사이트 메뉴의 <b>Restore official LEGO firmware</b>를 쓰세요. 공식 사이트에서 펌웨어를 설치해도 돼요.</p>
+        <p><a class="linkbtn" href="https://code.pybricks.com" target="_blank" rel="noopener">Pybricks 공식 사이트 열기 ↗</a></p>
+      </details>
+      <p class="muted">설치되는 펌웨어: Pybricks <b id="fwVer">v4.1.1</b> (SPIKE Prime 원래 허브 · 새 허브 둘 다). Pybricks 팀이 만든 MIT 라이선스 오픈소스이고, 설치 순서는 Pybricks 공식 설치 도구와 같아요. 허브를 살려 내는 <b>레고 기본 부트로더</b>(맨 앞 32KB)는 절대 건드리지 않아요.</p>
     </article>
 
     <article class="stepcard">
@@ -485,7 +536,7 @@
 
 <script>
 // ===== 앱 버전 (고칠 때마다 올리기) =====
-const APP_VERSION = "v16";
+const APP_VERSION = "v18";
 document.getElementById("verText").textContent = APP_VERSION;
 
 // ===== 화면 색 테마 =====
@@ -536,7 +587,7 @@ const CMD_WRITE_PROGRAM_META = 0x03;   // 프로그램 크기 알리기
 const CMD_WRITE_USER_RAM     = 0x04;   // 프로그램 내용 쓰기
 const PYBRICKS_CAPS = "c5f50003-8280-46da-89f4-6d8051e4aeef";   // 허브 능력 (한 번에 쓸 수 있는 크기 등)
 const CAP_MPY6 = 2, CAP_MPY6_1 = 4, CAP_MPY6_3 = 32;           // 허브가 받아 주는 프로그램 형식
-const HUB_PROGRAM_VERSION = 2;          // 이 앱과 같이 배포하는 hub_program.bin의 버전
+const HUB_PROGRAM_VERSION = 3;          // 이 앱과 같이 배포하는 hub_program.bin의 버전
 const EVENT_STATUS      = 0x00;
 const EVENT_STDOUT      = 0x01;
 const FLAG_LOW_BATTERY     = 1 << 0;
@@ -565,10 +616,30 @@ function dpadCommand(up, down, left, right) {
   if (right) return "R";
   return null;
 }
-// 방향키가 없을 때 우선순위
+// 방향키가 없을 때 우선순위 (예전 허브 프로그램 v2 이하: 한 번에 한 가지만)
 const ORDER = [
   ["triangle", "T"], ["square", "Q"], ["cross", "X"], ["circle", "O"],
 ];
+// 지금 눌린 버튼 → 주행·팔·집게 상태 (예: "F-O" = 앞으로 + 팔 그대로 + 집게 펴기). 아무것도 안 누르면 "S"
+// 같은 부품의 반대 버튼(△□, ✕○)을 같이 누르면 그 부품은 멈춤
+function controlState(pressed) {
+  const d = dpadCommand(pressed("up"), pressed("down"), pressed("left"), pressed("right")) || "-";
+  const t = pressed("triangle"), q = pressed("square"), x = pressed("cross"), o = pressed("circle");
+  const a = t && !q ? "T" : q && !t ? "Q" : "-";
+  const g = x && !o ? "X" : o && !x ? "O" : "-";
+  const st = d + a + g;
+  return st === "---" ? "S" : st;
+}
+// 예전 허브 프로그램용: 상태 → 한 글자 (방향키 먼저)
+function singleCommand(st) {
+  if (st === "S") return "S";
+  for (const c of st) if (c !== "-") return c;
+  return "S";
+}
+function stateLabel(st) {
+  if (st === "S") return LABEL.S;
+  return [...st].filter((c) => c !== "-").map((c) => LABEL[c]).join(" + ");
+}
 
 const LABEL = {
   F: "앞으로", B: "뒤로", L: "왼쪽 회전", R: "오른쪽 회전",
@@ -1035,7 +1106,338 @@ $("setupBtn").addEventListener("click", () => {
   const panel = $("setup");
   panel.hidden = !panel.hidden;
   $("setupBtn").classList.toggle("active", !panel.hidden);
+  if (!panel.hidden) setTimeout(warmFirmware, 0);
 });
+
+// ===== 펌웨어 설치 (USB 선, WebUSB DFU) =====
+// Pybricks 공식 설치 도구(pybricks-micropython/tools/flash/dfu.py, MIT 라이선스)의 순서를 그대로 따라요.
+// 허브 메모리 지도 (시작 0x08000000):
+//   0x08000000 ~ 32KB : 레고 기본 부트로더 — 허브를 살려 내는 곳. 절대 지우거나 쓰지 않아요.
+//   0x08008000 ~ 32KB : 2단계 부트로더(mboot). 레고 펌웨어가 든 허브에 처음 설치할 때만 같이 넣어요.
+//   0x08010000 ~      : Pybricks 4.x 펌웨어. (3.x 시절처럼 0x08008000에 쓰면 허브가 안 켜져요)
+const FW = {
+  version: "v4.1.1",
+  f4: { file: "fw/primehub-f4-v4.1.1.bin", size: 315016, nameOffset: 315000, nameSize: 16,
+        sha256: "b160df879bacc6dac329a40ec181ab2b3eb9edbfc6489b9d0ea88f3cf0d05241" },
+  h5: { file: "fw/primehub-h5-v4.1.1.bin", size: 328472, nameOffset: 328456, nameSize: 16,
+        sha256: "b20075b6d390de50ed5a5f0fa08c879d13b113ece4d14e62b19bdb00a4e4957b" },
+  // 2단계 부트로더는 레고 것이라 이 앱에 넣지 않고, Pybricks 공식 저장소(같은 4.1.1 버전)에서 받아 확인해요
+  mboot: { size: 32768, sha256: "382e392a555cf915aa30e28ef70ae029753b3a9bbb4dc8acade79d648562cbfd",
+           urls: ["https://raw.githubusercontent.com/pybricks/pybricks-micropython/v4.1.1/bricks/primehub_f4/mboot.bin",
+                  "https://cdn.jsdelivr.net/gh/pybricks/pybricks-micropython@v4.1.1/bricks/primehub_f4/mboot.bin"] },
+};
+const LEGO_VID = 0x0694, PID_PRIME_DFU = 0x0008, PID_INVENTOR_DFU = 0x0011;
+const KB = 1024, FLASH_BASE = 0x08000000, FLASH_END = FLASH_BASE + 1024 * KB;
+const LEGO_BOOT_END = FLASH_BASE + 32 * KB;   // 이 주소 앞은 어떤 경우에도 안 건드림
+const FW_ADDR = FLASH_BASE + 64 * KB;         // Pybricks 4.x 시작 주소 0x08010000
+const DFU = { DNLOAD: 1, GETSTATUS: 3, CLRSTATUS: 4, ABORT: 6 };
+const DFU_ST = { IDLE: 2, DNBUSY: 4, DNIDLE: 5, MANIFEST: 7, UPIDLE: 9 };
+const SECTORS = {
+  // STM32F4 1MB: 16/16/16/16/64/128×7 KB
+  f4: (() => { const s = []; let a = FLASH_BASE; for (const k of [16, 16, 16, 16, 64, 128, 128, 128, 128, 128, 128, 128]) { s.push([a, k * KB]); a += k * KB; } return s; })(),
+  // STM32H5 1MB: 8KB씩 128칸
+  h5: Array.from({ length: 128 }, (_, i) => [FLASH_BASE + i * 8 * KB, 8 * KB]),
+};
+const USB_WAIT_MS = 15000;
+
+function usbWait(p, what) {
+  let t;
+  return Promise.race([p, new Promise((_, no) => { t = setTimeout(() => no(new Error("허브가 응답하지 않아요 (" + what + ")")), USB_WAIT_MS); })])
+    .finally(() => clearTimeout(t));
+}
+
+class DfuHub {
+  constructor(dev) { this.dev = dev; this.xfer = 1024; this.layout = ""; this.mcu = null; this.minAddr = FW_ADDR; }
+  async open() {
+    const d = this.dev;
+    if (!d.opened) await d.open();
+    if (!d.configuration) await d.selectConfiguration(1);
+    await d.claimInterface(0);
+    try { await d.selectAlternateInterface(0, 0); } catch (e) {}
+    // 한 번에 보낼 크기(wTransferSize)와 메모리 배치 글자(예: @Internal Flash /0x08000000/04*016Kg,...)
+    const cfg = await this.configDescriptor();
+    let strIdx = 0;
+    for (let i = 0; i + 1 < cfg.length && cfg[i]; i += cfg[i]) {
+      const len = cfg[i], type = cfg[i + 1];
+      if (type === 4 && cfg[i + 2] === 0 && cfg[i + 3] === 0) strIdx = cfg[i + 8];
+      if (type === 0x21 && len >= 7) this.xfer = (cfg[i + 5] | (cfg[i + 6] << 8)) || 1024;
+    }
+    const intf = d.configuration.interfaces.find((x) => x.interfaceNumber === 0);
+    const alt = intf && intf.alternates.find((a) => a.alternateSetting === 0);
+    this.layout = (alt && alt.interfaceName) || (await this.string(strIdx));
+    for (let k = 0; k < 4; k++) {   // 대기 상태로 맞추기
+      const [s] = await this.status();
+      if (s === DFU_ST.IDLE) break;
+      await this.out(s === DFU_ST.DNIDLE || s === DFU_ST.UPIDLE ? DFU.ABORT : DFU.CLRSTATUS, 0);
+    }
+  }
+  async configDescriptor() {
+    const req = { requestType: "standard", recipient: "device", request: 6, value: 0x0200, index: 0 };
+    let r = await usbWait(this.dev.controlTransferIn(req, 9), "설명 읽기");
+    r = await usbWait(this.dev.controlTransferIn(req, r.data.getUint16(2, true)), "설명 읽기");
+    return new Uint8Array(r.data.buffer, r.data.byteOffset, r.data.byteLength);
+  }
+  async string(idx) {
+    if (!idx) return "";
+    try {
+      const r = await usbWait(this.dev.controlTransferIn({ requestType: "standard", recipient: "device", request: 6, value: 0x0300 | idx, index: 0x0409 }, 255), "이름 읽기");
+      let s = ""; for (let i = 2; i + 1 < Math.min(r.data.getUint8(0), r.data.byteLength); i += 2) s += String.fromCharCode(r.data.getUint16(i, true));
+      return s;
+    } catch (e) { return ""; }
+  }
+  async out(request, value, data) {
+    const r = await usbWait(this.dev.controlTransferOut({ requestType: "class", recipient: "interface", request, value, index: 0 }, data), "보내기");
+    if (r.status !== "ok") throw new Error("USB 전송 실패 (" + r.status + ")");
+  }
+  async status() {
+    const r = await usbWait(this.dev.controlTransferIn({ requestType: "class", recipient: "interface", request: DFU.GETSTATUS, value: 0, index: 0 }, 6), "상태 확인");
+    const d = r.data;
+    return [d.getUint8(4), d.getUint8(1) | (d.getUint8(2) << 8) | (d.getUint8(3) << 16)];
+  }
+  async waitIdle(stage) {
+    let [s, t] = await this.status();
+    while (s === DFU_ST.DNBUSY) { if (t) await sleep(t); [s, t] = await this.status(); }
+    if (s !== DFU_ST.DNIDLE) throw new Error(`허브에 쓰다가 문제가 생겼어요 (${stage}, 상태 ${s}). 허브는 괜찮아요. 업데이트 모드로 다시 켜고 처음부터 해 주세요.`);
+  }
+  async command(code, addr, stage) {
+    const b = new Uint8Array(5); b[0] = code; new DataView(b.buffer).setUint32(1, addr, true);
+    await this.out(DFU.DNLOAD, 0, b);
+    await this.waitIdle(stage);
+  }
+  // 안전장치: 부트로더 영역이나 메모리 밖에는 절대 쓰거나 지우지 않음
+  guard(addr, len) {
+    if (addr < LEGO_BOOT_END || addr < this.minAddr || addr + len > FLASH_END) {
+      throw new Error("안전장치가 멈췄어요: 허브의 부트로더 영역(0x" + addr.toString(16) + ")에는 쓰지 않아요. 아무것도 바뀌지 않았어요.");
+    }
+  }
+  sectorsIn(addr, length) {
+    const end = addr + length;
+    return SECTORS[this.mcu].filter(([a, size]) => !(a + size <= addr || a >= end));
+  }
+  eraseSize(addr, length) { return this.sectorsIn(addr, length).reduce((n, [, size]) => n + size, 0); }
+  async erase(addr, length, onBytes) {
+    const list = this.sectorsIn(addr, length);
+    for (const [a, size] of list) this.guard(a, size);   // 하나라도 걸리면 시작도 안 함
+    for (const [a, size] of list) { await this.command(0x41, a, "지우기"); onBytes && onBytes(size); }
+  }
+  async write(addr, data, onBytes) {
+    const unit = this.mcu === "h5" ? 16 : 4;
+    if (addr % unit) throw new Error("쓰기 주소가 맞지 않아요");
+    this.guard(addr, data.length);
+    for (let w = 0; w < data.length;) {
+      await this.command(0x21, addr + w, "주소");
+      const n = Math.min(this.xfer, data.length - w);
+      await this.out(DFU.DNLOAD, 2, data.subarray(w, w + n));
+      await this.waitIdle("쓰기");
+      w += n; onBytes && onBytes(n);
+    }
+  }
+  async exit() {   // 업데이트 모드를 끝내고 새 펌웨어로 다시 켜기
+    await this.command(0x21, FLASH_BASE, "주소");
+    try { await this.out(DFU.DNLOAD, 0); await this.status(); } catch (e) { /* 허브가 바로 다시 켜지면서 끊기는 게 정상 */ }
+    try { await this.dev.close(); } catch (e) {}
+  }
+}
+
+// 어떤 허브인지: 공식 도구의 determine_platform과 같은 판단
+function whichHub(dev, layout) {
+  const bcd = (dev.deviceVersionMajor << 8) | (dev.deviceVersionMinor << 4) | dev.deviceVersionSubminor;
+  if (bcd === 0x0100) return { mcu: "f4", platform: "prime_hub", bcd };     // 레고 기본 부트로더 (처음 설치)
+  if (bcd === 0x0300 && /064Kg/.test(layout) && /128Kg/.test(layout)) return { mcu: "f4", platform: "prime_hub_f4", bcd };
+  if (bcd === 0x0300 && /08Kg/.test(layout)) return { mcu: "h5", platform: "prime_hub_h5", bcd };   // 새 허브
+  return { mcu: null, platform: null, bcd };
+}
+
+async function sha256Hex(bytes) {
+  const h = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
+  return Array.from(h, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// 파일 받기 + 손상 확인 (저장본이 깨졌으면 지우고 한 번 더)
+async function loadChecked(urls, size, hash, what) {
+  for (const url of urls) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch(url, attempt ? { cache: "reload" } : undefined);
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const data = new Uint8Array(await res.arrayBuffer());
+        if (data.length === size && (await sha256Hex(data)) === hash) return data;
+        try { const keys = await caches.keys(); for (const k of keys) await (await caches.open(k)).delete(url, { ignoreSearch: true }); } catch (e) {}
+      } catch (e) { /* 다음 방법 */ }
+    }
+  }
+  const err = new Error(what);
+  err.noFile = true;
+  throw err;
+}
+
+function encodeHubName(name, size) {
+  const bytes = new TextEncoder().encode(name);
+  return bytes.length + 1 <= size ? bytes : null;
+}
+function checkFwName() {
+  const input = $("fwName"), hint = $("fwNameHint");
+  const name = input.value.trim();
+  const ok = !name || encodeHubName(name, 16);
+  input.classList.toggle("bad", !ok);
+  hint.classList.toggle("bad", !ok);
+  hint.textContent = ok ? "한글 5자, 영어·숫자 15자까지" : "이름이 너무 길어요. 한글 5자, 영어·숫자 15자까지 돼요.";
+  return ok ? name : null;
+}
+$("fwName").addEventListener("input", checkFwName);
+try { $("fwName").value = localStorage.getItem("robot-pad-fwname") || ""; } catch (e) {}
+
+function withName(base, info, name) {
+  const fw = base.slice();
+  if (name) {
+    fw.fill(0, info.nameOffset, info.nameOffset + info.nameSize);
+    fw.set(encodeHubName(name, info.nameSize), info.nameOffset);
+  }
+  return fw;
+}
+
+let fwBusy = false;
+function setFwMsg(text, kind) {
+  const el = $("fwMsg");
+  el.textContent = text;
+  el.className = "installmsg" + (kind ? " " + kind : "");
+}
+function setFwProgress(frac) {
+  const bar = $("fwProgress");
+  bar.hidden = frac === null;
+  if (frac !== null) bar.firstElementChild.style.width = Math.round(frac * 100) + "%";
+}
+const isWindows = /Windows/i.test(navigator.userAgent);
+
+async function installFirmware() {
+  if (fwBusy) return;
+  const name = checkFwName();
+  if (name === null) { $("fwName").focus(); return; }
+  if (!navigator.usb) {
+    setFwMsg("이 브라우저는 USB 설치가 안 돼요. 컴퓨터의 크롬(또는 엣지)에서 이 조종기를 열어 주세요. 아이패드는 안 돼요.", "err");
+    return;
+  }
+  fwBusy = true;
+  $("fwBtn").disabled = true;
+  setFwProgress(null);
+  let device = null, started = false;
+  try {
+    // 1) 허브 고르기 (버튼을 누른 그때 바로 열어야 해서 가장 먼저)
+    setFwMsg("목록에서 'LEGO Technic Large Hub in DFU Mode'를 골라 주세요...");
+    try {
+      device = await navigator.usb.requestDevice({ filters: [
+        { vendorId: LEGO_VID, productId: PID_PRIME_DFU }, { vendorId: LEGO_VID, productId: PID_INVENTOR_DFU }] });
+    } catch (e) {
+      if (e && e.name === "NotFoundError") {
+        if (isWindows) $("fwWin").open = true;
+        throw new Error("허브를 고르지 않았어요. 목록에 허브가 없었다면: 블루투스 버튼을 누른 채 USB를 꽂아 불빛이 여러 색으로 깜빡이는지 확인해 주세요." + (isWindows ? " 윈도우는 아래 드라이버 안내도 봐 주세요." : ""));
+      }
+      throw e;
+    }
+
+    // 2) 연결하고 어떤 허브인지 확인
+    setFwMsg("허브 확인 중...");
+    const dfu = new DfuHub(device);
+    try { await dfu.open(); }
+    catch (e) {
+      if (isWindows) $("fwWin").open = true;
+      const m = String((e && e.message) || e);
+      throw new Error(/access|denied|SecurityError|claim/i.test(m) || (e && e.name === "SecurityError")
+        ? "허브에 접근하지 못했어요. Pybricks Code 같은 다른 탭이 열려 있으면 닫아 주세요." + (isWindows ? " 윈도우는 처음 한 번 아래 'WinUsb 드라이버'를 골라 줘야 해요." : "")
+        : "허브와 USB로 대화하지 못했어요 (" + m + "). 선을 다시 꽂고 업데이트 모드로 켠 뒤 해 주세요.");
+    }
+    const hw = whichHub(device, dfu.layout);
+    if (!hw.platform) {
+      throw new Error(`처음 보는 종류의 허브예요 (버전 ${hw.bcd.toString(16)}). 안전을 위해 아무것도 쓰지 않았어요. Pybricks 공식 사이트에서 설치해 주세요.`);
+    }
+    dfu.mcu = hw.mcu;
+
+    // 3) 펌웨어 파일 준비 (쓰기 전에 전부 받아서 손상 여부까지 확인)
+    setFwMsg("펌웨어 파일 확인 중...");
+    const info = hw.mcu === "h5" ? FW.h5 : FW.f4;
+    const base = await loadChecked([info.file], info.size, info.sha256,
+      "펌웨어 파일이 없거나 손상됐어요. 인터넷에 연결해서 이 조종기를 한 번 새로 열어 주세요. 허브는 아무것도 바뀌지 않았어요.");
+    const fw = withName(base, info, name);
+
+    let jobs;   // 공식 도구와 같은 순서
+    if (hw.platform === "prime_hub_h5") {
+      if (fw[0x264] >= 0x0f || fw.length < 16 * KB) throw new Error("이 펌웨어는 이 허브와 맞지 않아요. 아무것도 바뀌지 않았어요.");
+      dfu.minAddr = FW_ADDR;
+      const PAGE = 8 * KB, crit = Math.floor(0x264 / 16) * 16;
+      jobs = [
+        ["erase", FW_ADDR, PAGE],                                           // 첫 칸만 먼저 지우고
+        ["write", FW_ADDR + crit, fw.subarray(crit, crit + 16)],            // 호환 표시를 먼저
+        ["erase", FW_ADDR + PAGE, fw.length - PAGE],                        // 나머지 지우기
+        ["write", FW_ADDR + crit + 16, fw.subarray(crit + 16)],
+        ["write", FW_ADDR + 16, fw.subarray(16, crit)],
+        ["write", FW_ADDR, fw.subarray(0, 16)],                             // 시작 부분은 맨 마지막
+      ];
+    } else {
+      if (fw[0x1f0] >= 0x0f) throw new Error("이 펌웨어는 이 허브와 맞지 않아요. 아무것도 바뀌지 않았어요.");
+      let image, addr, headerAt;
+      if (hw.platform === "prime_hub_f4") {          // 2단계 부트로더가 이미 있음 → 0x08010000에 바로
+        image = fw; addr = FW_ADDR; headerAt = 0; dfu.minAddr = FW_ADDR;
+      } else {                                       // 레고 펌웨어가 든 허브: 2단계 부트로더 + 펌웨어를 0x08008000부터
+        setFwMsg("처음 설치하는 허브예요. 부트로더 조각 확인 중...");
+        const mboot = await loadChecked(FW.mboot.urls, FW.mboot.size, FW.mboot.sha256,
+          "처음 설치하는 허브라서 Pybricks 공식 저장소에서 부트로더 조각(32KB)을 받아야 해요. 인터넷에 연결하고 다시 눌러 주세요. 허브는 아무것도 바뀌지 않았어요.");
+        image = new Uint8Array(mboot.length + fw.length); image.set(mboot); image.set(fw, mboot.length);
+        addr = LEGO_BOOT_END; headerAt = 32 * KB; dfu.minAddr = LEGO_BOOT_END;
+      }
+      // 펌웨어 시작 부분(4바이트)을 비워서 쓰고 맨 마지막에 채움 → 중간에 끊겨도 허브가 업데이트 모드로 켜짐
+      const header = image.slice(headerAt, headerAt + 4);
+      const body = image.slice(); body.fill(0xff, headerAt, headerAt + 4);
+      jobs = [["erase", addr, image.length], ["write", addr, body], ["write", FW_ADDR, header]];
+    }
+
+    // 4) 지우고 쓰기
+    const total = jobs.reduce((n, [k, a, x]) => n + (k === "erase" ? dfu.eraseSize(a, x) : x.length), 0);
+    let done = 0;
+    const tick = (n) => {
+      done += n;
+      const f = Math.min(1, done / total);
+      setFwProgress(f);
+      setFwMsg(`설치 중... ${Math.round(f * 100)}%  (선을 빼지 마세요)`);
+    };
+    started = true;
+    setFwProgress(0);
+    for (const [kind, a, x] of jobs) {
+      if (kind === "erase") await dfu.erase(a, x, tick);
+      else await dfu.write(a, x, tick);
+    }
+    setFwMsg("허브 다시 켜는 중...");
+    await dfu.exit();
+    setFwProgress(1);
+    const kindText = hw.platform === "prime_hub_h5" ? "새 허브" : "SPIKE 허브";
+    setFwMsg(`완료! ${kindText}에 Pybricks ${FW.version}을 설치했어요` + (name ? ` (이름: ${name})` : "") + ". 허브가 다시 켜지면 선을 빼고 2단계 '조종 프로그램 넣기'를 눌러 주세요.", "ok");
+    // 다음 허브 이름 미리 채우기: 1조 → 2조
+    const m = name.match(/^(\d+)(.*)$/);
+    const next = m ? String(Number(m[1]) + 1) + m[2] : name;
+    if (encodeHubName(next, 16)) $("fwName").value = next;
+    try { localStorage.setItem("robot-pad-fwname", $("fwName").value); } catch (e) {}
+  } catch (e) {
+    const m = String((e && e.message) || e);
+    let text = m;
+    if (started && /disconnect|NetworkError|transfer|NotFoundError|device|응답하지/i.test(m + (e && e.name))) {
+      text = "설치하다가 허브 연결이 끊겼어요. 허브는 망가지지 않아요. 블루투스 버튼을 누른 채 USB를 다시 꽂아 업데이트 모드로 켜고 처음부터 다시 해 주세요.";
+    }
+    setFwMsg(text, "err");
+    setFwProgress(null);
+    if (device) { try { await device.close(); } catch (x) {} }
+  } finally {
+    fwBusy = false;
+    $("fwBtn").disabled = false;
+  }
+}
+$("fwBtn").addEventListener("click", installFirmware);
+
+// 허브 준비를 열면 펌웨어 파일을 조용히 미리 받아 둠 (이미 저장돼 있으면 아무 일 없음) → 다음엔 인터넷 없이도 설치
+let fwWarmed = false;
+function warmFirmware() {
+  if (fwWarmed || !navigator.onLine) return;
+  fwWarmed = true;
+  for (const url of [FW.f4.file, FW.h5.file, FW.mboot.urls[0]]) fetch(url).catch(() => { fwWarmed = false; });
+}
 
 // ===== 다른 허브로 바꾸기 =====
 // 지금 허브와 연결을 끊고, 허브 고르는 창을 다시 띄움
@@ -1342,22 +1744,17 @@ function loop() {
   if (r1 && !prevR1) bumpSpeed(+1);
   prevL1 = l1; prevR1 = r1;
 
-  let cmd = "S";
-  if (!document.hidden) {   // 화면이 안 보일 땐 무조건 정지
-    const d = dpadCommand(pressed("up"), pressed("down"), pressed("left"), pressed("right"));
-    if (d) cmd = d;
-    else {
-      for (const [name, c] of ORDER) {
-        if (pressed(name)) { cmd = c; break; }
-      }
-    }
-  }
-  $("cmdText").textContent = LABEL[cmd];
-  $("cmdKey").textContent = cmd;
+  // 주행·팔·집게를 따로 읽어서 동시에 (예: 앞으로 가면서 집게 펴기)
+  const multi = hubVer !== null && hubVer >= 3;     // 예전 허브 프로그램은 한 번에 한 가지만 알아들음
+  let state = document.hidden ? "S" : controlState(pressed);   // 화면이 안 보일 땐 무조건 정지
+  if (!multi && state !== "S") state = singleCommand(state);
+  const label = stateLabel(state);
+  if ($("cmdText").textContent !== label) { $("cmdText").textContent = label; $("cmdText").classList.toggle("long", label.length > 7); }
+  $("cmdKey").textContent = state === "S" || state.length === 1 ? state : state.replace(/-/g, "·");
 
-  if (ch && ready && cmd !== last) {
-    last = cmd;
-    send(cmd);
+  if (ch && ready && state !== last) {
+    last = state;
+    send(state.length === 3 ? "M" + state + "\n" : state);
   }
 
   requestAnimationFrame(loop);
@@ -1392,7 +1789,7 @@ document.addEventListener("contextmenu", (e) => {
 });
 // 실수로 창을 닫거나 새로고침할 때 (노트북) 조종 중이면 한 번 물어봄
 window.addEventListener("beforeunload", (e) => {
-  if (ch && ready) { e.preventDefault(); e.returnValue = ""; }
+  if ((ch && ready) || fwBusy || installing) { e.preventDefault(); e.returnValue = ""; }
 });
 
 // ===== 안전장치 =====
@@ -1449,6 +1846,7 @@ function showUpdateBar(v) {
 // 저장해 둔 앱 파일·서비스 워커를 지우고 서버에서 새로 열기
 async function forceUpdate() {
   if (reloading) return;
+  if (fwBusy || installing) { $("updateText").textContent = "허브에 설치하는 중이에요. 끝난 뒤에 다시 눌러 주세요."; $("updateBar").hidden = false; return; }
   reloading = true;
   $("updateNow").disabled = true;
   $("updateText").textContent = "최신 버전 받는 중...";
@@ -1499,7 +1897,7 @@ async function forceUpdate() {
 
 function applyUpdate(v) {
   if (reloading) return;
-  if (ch) {   // 조종 중엔 갑자기 바꾸지 않고 띠로 알려 줌
+  if (ch || fwBusy || installing) {   // 조종·설치 중엔 갑자기 바꾸지 않고 띠로 알려 줌
     updatePending = true;
     showUpdateBar(v);
     return;
